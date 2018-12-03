@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" lang="ru" Accept-Language="ru"/>
+    <!--[if IE]>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+    <![endif]-->
+
+    <!--<link rel="icon" type="image/gif" id="favicon_id"/>-->
+
+    <!--<link rel="icon" type="image/gif" href="/icons/moda32x32.ico"/>-->
+    <!--[if IE]>
+    <!---link rel="stylesheet" type="text/css" href="/css/main_ie.css"--!>
+    <!--<link rel="shortcut icon" href="icons/moda32x32.ico" />-->
+    <!--<![endif]&ndash;&gt;-->
+    <!--[if !IE]><!-->
+    <!--link rel="stylesheet" type="text/css" href="/css/main_nie.css"--!>
+    <!--<![endif]-->
+
+    <!--<script src="/jslib/handsontable-0.29.1/handsontable.full.min.js"></script>-->
+    <!--<link rel="stylesheet" media="screen" href="/jslib/handsontable-0.29.1/handsontable.full.min.css">-->
+    <!--<script src="/jslib/handsontable-0.29.1/numbro/languages/ru-RU.min.js"></script>-->
+    <!--<script src="/jslib/handsontable-0.29.1/moment/moment.js"></script>-->
+    <!--<script src="/jslib/handsontable-0.29.1/moment/locale/ru.js"></script>-->
+
+    <link rel="stylesheet" href="/jslib/dijit/themes/claro/claro.css" media="screen">
+    <!--<link rel="stylesheet" href="/jslib/dijit/themes/soria/soria.css" media="screen">-->
+    <!--<link rel="stylesheet" href="/jslib/dijit/themes/nihilo/nihilo.css" media="screen">-->
+    <!--<link rel="stylesheet" href="/jslib/dijit/themes/tundra/tundra.css" media="screen">-->
+    <script type="text/javascript" src="/jslib/dojo/dojo.js" data-dojo-config="async:true,parseOnLoad:true"></script>
+
+    <!--<link rel="stylesheet" href="/css/htable.css" media="screen">-->
+    <link rel="stylesheet" type="text/css" href="/css/main.css" media="screen">
+    <!--<link rel="stylesheet" type="text/css" href="/css/contentController.css" media="screen">-->
+    <!--<script type="text/javascript" src="/jslib/jsBarcode/JsBarcode.ean-upc.min.js"></script>-->
+</head>
+<body class="claro">
+    <div id="main_MainContainer" style="">
+        <div id="main_TopContainer">
+            <div id="main_TopImg"></div>
+            <div id="main_MainMenu"></div>
+            <div id="main_TopInfoPane">
+                <div id="main_configName"  style="display:inline;margin-left:10px;"></div>
+                <div id="main_dbUsername" style="display:inline;margin-left:10px;"></div>
+                <div id="main_dbEmpName" style="display:inline;margin-left:10px;"></div>
+            </div>
+        </div>
+        <div id="main_ContentContainer"></div>
+    </div>
+</body>
+<script type="text/javascript">
+    require(["app/app", "dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/layout/TabContainer", "dijit/layout/ContentPane",
+            "dijit/MenuBar", "dijit/MenuBarItem", "dijit/PopupMenuBarItem", "dijit/Menu", "dijit/MenuItem", "dijit/MenuSeparator",
+            "dijit/form/ToggleButton", "dojox/layout/ContentPane",
+            "dojo/domReady!"],
+        function (APP, BorderContainer, LayoutContainer, TabContainer, ContentPane,
+                  MenuBar, MenuBarItem, PopupMenuBarItem, Menu, MenuItem, MenuSeparator,
+                  ToggleButton, XContentPane) {                                               console.log("START MAIN PAGE...");//!!!IT'S FOR TESTING!!!
+
+            var main_MainContainer = APP.instanceForID("main_MainContainer", BorderContainer, {design: "headline"});
+            // var main_TopContainer = APP.instanceForID("main_TopContainer", BorderContainer, {region: "top", design: "sidebar", class: "mainTopContent", gutters: true});
+            // var main_TopImg = APP.instanceForID("main_TopImg", ContentPane, {region: "left", class: "mainTopContent"});
+            // var main_MainMenu = APP.instanceForID("main_MainMenu", MenuBar, {region:"top", class: "mainTopContent"});
+            // var main_TopInfoPane = APP.instanceForID("main_TopInfoPane", ContentPane, {region: "bottom", class: "mainTopContent"});
+            // var main_ContentContainer = APP.instanceForID("main_ContentContainer", TabContainer, {region: "center", tabPosition: "top", class: "mainContent"});
+            main_MainContainer.startup();
+
+            var pageContentPane1 =
+                APP.childFor(main_MainContainer, "PageContentPane_1",
+                    ContentPane, {region: "center", title:"PageContentPane_1", closable:true, parseOnLoad:false, style:"margin:0;padding:0;", executeScripts:false, extractContent:false});
+            // main_MainContainer.selectChild(pageContentPane);
+            pageContentPane1.set("content","");                                                console.log('pageContentPane1',pageContentPane1);
+            pageContentPane1.set("href","/ipage1");
+            pageContentPane1.onDownloadEnd= function(){                                                console.log('pageContentPane1.onDownloadEnd',this);
+
+                var dn=pageContentPane1.domNode;                                         console.log('pageContentPane1.domNode',pageContentPane1.domNode);
+                var innerScriptTag=dn.getElementsByTagName("script");                          console.log('script123',innerScriptTag,innerScriptTag[0],innerScriptTag.length);
+                // for(var item in script123)                                                 console.log('item=',item);
+                // console.log('script123[0].innerText={',innerScriptTag[0].innerText+"}");
+                // var script0="console.log(this); this.script0=function(){"+innerScriptTag[0].innerText+"}";                                                     console.log('script0',script0);
+                var innerScriptText=innerScriptTag[0].innerText;
+
+
+                var innerScriptTagItem=innerScriptTag[0], parent=innerScriptTagItem.parentNode;
+                for(var i in parent.children){
+                    var parentChild=parent.children[i];
+                    if(parentChild==innerScriptTagItem)parent.children[i].remove();
+                }
+                // var s0="require(['dijit/registry'],function (registry){ var self=registry.byId('PageContentPane_1'); self.script0=function(){ console.log('script0'); }; self.script0(); })";
+                var s0="require(['dijit/registry'],function (registry){ var self=registry.byId('PageContentPane_1'); self.script0=function(){ "+innerScriptText+" }; self.script0(); })";
+                var n = document.createElement('script');n.type = "text/javascript";                            console.log('s0=',s0);
+                pageContentPane1.domNode.appendChild(n);
+                n.text = s0;
+            };
+
+            // var pageContentPane2 =
+            //     APP.childFor(main_MainContainer, "PageContentPane_2",
+            //         XContentPane, {region: "center", title:"PageContentPane_2", closable:true, parseOnLoad:false, style:"margin:0;padding:0;", executeScripts:true, extractContent:false});
+            // // main_MainContainer.selectChild(pageContentPane);
+            // pageContentPane2.set("content","");                                                console.log('pageContentPane2',pageContentPane2);
+            // pageContentPane2.set("href","/ipage2");
+            // var dn2=pageContentPane2.domNode;                                         console.log('pageContentPane2.domNode',pageContentPane2.domNode);
+    });
+</script>
+</html>

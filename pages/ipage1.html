@@ -1,0 +1,36 @@
+<body>
+<div id="docs_rec_PageContainer" style="width:100%;height:100%;">
+    Inner Page1
+</div>
+<!--<div id="docs_rec_PageContainer" style="width:100%;height:100%;">-->
+    <!--<div id="docs_rec_ListContainer" style="width:310px;height:100%; margin:0;padding:0;"></div>-->
+    <!--<div id="docs_rec_DetailContainer" style="width:100%;height:100%; margin:0;padding:0;">-->
+        <!--<div id="docs_rec_DetailHeader" style="width:100%;height:auto; margin:0;padding:0;"></div>-->
+        <!--<div id="docs_rec_ProductsTable" style="width:100%;height:100%; margin:0;padding:0;"></div>-->
+        <!--<div id="docs_rec_DetailTotal" style="width:100%;height:auto;; margin:0;padding:0;"></div>-->
+    <!--</div>-->
+    <!--<div id="docs_rec_RightContainer" style="width:250px;height:100%; margin:0;padding:0;"></div>-->
+<!--</div>-->
+</body>
+<script type="text/javascript">                                                                     console.log('ipage1',this,self);
+    //
+    function f1(){
+        console.log('f1:',this,self);
+    }
+    f1();
+
+    var f2=function(){
+        console.log('f2:',this,self);
+    };
+    f2();
+
+    var o={
+
+        of1:function(){
+                                                            console.log('of1:',this,self);
+        }
+
+    };
+    o.of1();
+
+</script>
