@@ -49,11 +49,11 @@
 </div>
 </body>
 <script type="text/javascript">
-    require(["app/app", "dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/layout/TabContainer", "app/myContentPane",//"dijit/layout/ContentPane",
+    require(["app/app", "dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/layout/TabContainer", "app/myContentPane","app/tagParser",
                 "dijit/MenuBar", "dijit/MenuBarItem", "dijit/PopupMenuBarItem", "dijit/Menu", "dijit/MenuItem", "dijit/MenuSeparator",
                 "dijit/form/ToggleButton", "dojox/layout/ContentPane",
                 "dojo/domReady!"],
-            function (APP, BorderContainer, LayoutContainer, TabContainer, ContentPane,
+            function (APP, BorderContainer, LayoutContainer, TabContainer, MyContentPane,tagParser,
                       MenuBar, MenuBarItem, PopupMenuBarItem, Menu, MenuItem, MenuSeparator,
                       ToggleButton, XContentPane) {                                               console.log("START MAIN PAGE...");//!!!IT'S FOR TESTING!!!
 
@@ -67,12 +67,18 @@
 
                 var pageContentPane1 =
                         APP.childFor(main_MainContainer, "PageContentPane_1",
-                                ContentPane, {region: "center", title:"PageContentPane_1", closable:true, parseOnLoad:false, style:"margin:0;padding:0;", executeScripts:false, extractContent:false});
+                                MyContentPane, {region: "center", title:"PageContentPane_1", closable:true, parseOnLoad:false, style:"margin:0;padding:0;", executeScripts:false, extractContent:false});
                 // main_MainContainer.selectChild(pageContentPane);
                 pageContentPane1.set("content","");                                                console.log('pageContentPane1',pageContentPane1);
                 pageContentPane1.set("href","/ipage1");
-//            pageContentPane1.onDownloadEnd= function(){                                                console.log('pageContentPane1.onDownloadEnd',this);
-//
+
+
+            pageContentPane1.onDownloadEnd= function() {   //console.log('pageContentPane1.onDownloadEnd',this);
+                            tagParser.parseThis(pageContentPane1.containerNode);
+                            };
+
+
+
 //                var dn=pageContentPane1.domNode;                                         console.log('pageContentPane1.domNode',pageContentPane1.domNode);
 //                var innerScriptTag=dn.getElementsByTagName("script");                          console.log('script123',innerScriptTag,innerScriptTag[0],innerScriptTag.length);
 //                // for(var item in script123)                                                 console.log('item=',item);
