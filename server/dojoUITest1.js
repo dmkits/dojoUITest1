@@ -9,7 +9,7 @@ module.exports= function(app) {
         res.sendFile(appViewsPath + '/ipage2.html');
     });
 
-    app.get("/mobileInvent/viewInvent", function (req, res) {
-        res.sendFile(appViewsPath + 'mobile/viewInvent.html');
+    app.get("/sysadmin", function (req, res) {
+        res.sendFile(appViewsPath + '/sysadmin.html');
     });
 };

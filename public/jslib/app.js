@@ -14,7 +14,7 @@ require(["dijit/registry","app/Page","app/InnerPage"],function (registry,Page,In
 //         //         InnerPage, {region: "center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
 //     });
 
-$$= function(args){                                                                                     console.log("$$",args,this);
+$$= function(args){                                                                                     //console.log("$$",args,this);
     if(typeof(args)==="function"){
         require(["dojo/domReady!"],function () {                                                        console.log("$$ run");//!!!IT'S FOR TESTING!!!
             args();
@@ -25,31 +25,74 @@ $$= function(args){                                                             
         }else{
             console.error("dijit/registry NOT INITIALIZED!!!"); return;
         }
+    } else if(typeof(args)==="object"&&args.length>0/*array*/){
+        var ao=[];
+        for (var i in args) {
+            var id=args[i]; ao.push({id:id,instance:dijit.registry.byId(id)})
+        }
+        return new $$Functions(ao);
     }
 };
-$$Functions= function(params){
+$$Functions= function(params){                                                                      //console.log("$$Functions ",params);
     var global=window;
     return{
-        id:params.id,
-        instance:params.instance,
-        pageInit:function(params){
-            if(!params)params={};
-            params.id=this.id;
-            this.instance=new global.Page(params,this.id); this.instance.startup();
+        o:params,
+        action:function(action){
+            if(typeof(this.o)!="object"||(typeof(this.o)=="object"&&this.o.length===undefined/*not array*/)){
+                action(this.o);
+                return;
+            }
+            for (var oKey in this.o) {
+                var o = this.o[oKey]; action(o);
+            }
+        },
+        pageInit:function(initParams){
+            this.action(function(o){
+                initParams.id=o.id;
+                o.instance=new global.Page(initParams,initParams.id); o.instance.startup();
+            });
             return this;
         },
-        addChild: function(Class, params) {
+        addChildTo: function(o, Class, params) {
             if (!params) params={};
             var childInstance = new Class(params);
-            if (this.instance!=null) this.instance.addChild(childInstance);
+            if (o.instance!=null) o.instance.addChild(childInstance);
         },
         addInnerPage:function(params){
-            this.addChild(global.InnerPage,params);
+            var addChildTo=this.addChildTo;
+            this.action(function(o){
+                addChildTo(o, global.InnerPage,params);
+            });
             return this;
         },
+        set:function(param,value){
+            this.action(function(o){
+                o.instance.set(param,value);
+            });
+        },
         val:function(value){
-            if(value===undefined) return this.instance.get("value");
-            this.instance.set("value",value);
+            if(value===undefined) {
+                var values=[];
+                this.action(function(o){
+                    values.push(o.instance.get("value"));
+                });
+                return (values.length<=1)?values[0]:values;
+            }
+            this.action(function(o){
+                o.instance.set("value",value);
+            });
+        },
+        style:function(name,value){
+            this.action(function(o){
+                o.instance.domNode.style[name]=value;
+            });
+            return this;
+        },
+        click:function(handler){
+            this.action(function(o){
+                o.instance.onClick=handler;
+            });
+            return this;
         }
     }
 };

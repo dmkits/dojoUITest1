@@ -36,7 +36,7 @@
 
 </head>
 <body class="claro">
-<page id="main_Page" style="">
+<page id="main_Page">
     <BorderContainer id="main_PageTop" region="top" design="sidebar" class="mainTopContent" gutters="true">
         <ContentPane id="main_TopImg" region="left" class="mainTopContent"></ContentPane>
         <MenuBar id="main_MainMenu" region="top" class="mainTopContent"></MenuBar>
@@ -49,7 +49,7 @@
     <TabContainer id="main_Tabs" region="center" tabPosition="top" class="mainContent"></TabContainer>
 </page>
 <script type="text/javascript" src="/jslib/app.js"></script>
-<script type="text/javascript">                                                                     console.log("main this=",this);
+<script type="text/javascript">                                                                     //console.log("main this=",this);
 $$(function(){                                                                                      console.log("START MAIN PAGE...");//!!!IT'S FOR TESTING!!!
     $$("main_Page").pageInit({design: "headline"});                                console.log("$$(\"main_Page\")=",$$("main_Page"));
     //$$("main_Page").addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});

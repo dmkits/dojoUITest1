@@ -1,9 +1,9 @@
-define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/layout/TabContainer", "dojox/layout/ContentPane",
+define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/layout/TabContainer", "dijit/layout/StackContainer", "dojox/layout/ContentPane",
         "dijit/MenuBar", "dijit/MenuBarItem", "dijit/PopupMenuBarItem", "dijit/Menu", "dijit/MenuItem", "dijit/MenuSeparator",
-        "dijit/form/TextBox","dijit/form/DateTextBox"],
-    function(BorderContainer,LayoutContainer,TabContainer, ContentPane,
+        "dijit/form/Button","dijit/form/ToggleButton", "dijit/form/TextBox","dijit/form/DateTextBox"],
+    function(BorderContainer,LayoutContainer,TabContainer, StackContainer, ContentPane,
              MenuBar, MenuBarItem, PopupMenuBarItem, Menu, MenuItem, MenuSeparator,
-             TextBox, DateTextBox){
+             Button,ToggleButton, TextBox, DateTextBox){
         return {
             /**
              *
@@ -14,10 +14,14 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/l
                     tagClass=TextBox;
                 }else if(node.tagName=="DATETEXTBOX"){
                     tagClass=DateTextBox;
+                }else if(node.tagName=="BUTTON"){
+                    tagClass=Button;
+                }else if(node.tagName=="TOGGLEBUTTON"){
+                    tagClass=ToggleButton;
                 }
                 if(!tagClass)return;
                 var params={tagName:node.tagName};
-                this.parseNodeAttributes(node,["class","style"],params);
+                this.parseNodeAttributes(node,["class","style", "iconClass"],params);
                 var d=new tagClass(params,node);
                 d.domNode.setAttribute("tagName",node.tagName);                                     //console.log('tagParser.createBaseTags: d=',d);
                 var label=node.getAttribute("label");
