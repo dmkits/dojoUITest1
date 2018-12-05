@@ -1,24 +1,29 @@
-define(["dojo/_base/declare","dijit/layout/ContentPane"],
-        function(declare,ContentPane){
-            return declare("myContentPane",ContentPane,{
+define(["dojo/_base/declare","dijit/layout/ContentPane","app/tagParser"],
+        function(declare,ContentPane,tagParser){
+            return declare("InnerPage",ContentPane,{
                 content:"",
                 constructor: function(args){
+                    this.parseOnLoad=false;
                     declare.safeMixin(this,args);
                 },
                 onLoad :function(){
+                    tagParser.parseThis(this.containerNode);
                     var resCode={code:[]};
                     this.grabScripts(resCode);
                     this._code=resCode.code;
-                    if(this._code.length>0){                                                                            //console.log(this._code);
+                    if(this._code.length>0){
                         var n = this.containerNode.ownerDocument.createElement('script');
                         n.type = "text/javascript";
                         var scripttext="";
                         this.containerNode.appendChild(n);
                         for(var i=0;i<this._code.length;i++){
-                            if(scripttext==""){scripttext = "require(['dijit/registry'],function(registry){ var self=registry.byId('"+this.id+"'); self.script_"+i+"= function(){"+this._code[i]+"}; self.script_"+i+"(); });";}
-                            else{scripttext += "\nrequire(['dijit/registry'],function(registry){ var self=registry.byId('"+this.id+"'); self.script_"+i+"= function(){"+this._code[i]+"}; self.script_"+i+"(); });";}
+                            if(scripttext.length>0)scripttext+="\n";
+                            scripttext =
+                                "require(['dijit/registry'],function(registry){ var self=registry.byId('"+this.id+"'); self.script_"+i+"= function(){\n"+
+                                this._code[i]+
+                                "}; self.script_"+i+"(); });";
                         }
-                        n.text = "require([],function(){\n"+scripttext+"})";                                            //console.log(n.text);
+                        n.text = scripttext;
                     }
                 },
                 grabScripts: function (resCode){
@@ -29,7 +34,7 @@ define(["dojo/_base/declare","dijit/layout/ContentPane"],
                            if(child.innerText.length>0) resCode.code.push(child.innerText);
                            this.containerNode.children[i].remove();
                        } else i++;
-                    };
+                    }
                     return(resCode);
                 }
             });

@@ -49,13 +49,15 @@
 </div>
 </body>
 <script type="text/javascript">
-    require(["app/app", "dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/layout/TabContainer", "app/myContentPane","app/tagParser",
+    require(["app/app", "dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/layout/TabContainer",
                 "dijit/MenuBar", "dijit/MenuBarItem", "dijit/PopupMenuBarItem", "dijit/Menu", "dijit/MenuItem", "dijit/MenuSeparator",
                 "dijit/form/ToggleButton", "dojox/layout/ContentPane",
+                "app/InnerPage","app/tagParser",
                 "dojo/domReady!"],
-            function (APP, BorderContainer, LayoutContainer, TabContainer, MyContentPane,tagParser,
+            function (APP, BorderContainer, LayoutContainer, TabContainer,
                       MenuBar, MenuBarItem, PopupMenuBarItem, Menu, MenuItem, MenuSeparator,
-                      ToggleButton, XContentPane) {                                               console.log("START MAIN PAGE...");//!!!IT'S FOR TESTING!!!
+                      ToggleButton, XContentPane,
+                      InnerPage,tagParser) {                                               console.log("START MAIN PAGE...");//!!!IT'S FOR TESTING!!!
 
                 var main_MainContainer = APP.instanceForID("main_MainContainer", BorderContainer, {design: "headline"});
                 // var main_TopContainer = APP.instanceForID("main_TopContainer", BorderContainer, {region: "top", design: "sidebar", class: "mainTopContent", gutters: true});
@@ -65,47 +67,9 @@
                 // var main_ContentContainer = APP.instanceForID("main_ContentContainer", TabContainer, {region: "center", tabPosition: "top", class: "mainContent"});
                 main_MainContainer.startup();
 
-                var pageContentPane1 =
-                        APP.childFor(main_MainContainer, "PageContentPane_1",
-                                MyContentPane, {region: "center", title:"PageContentPane_1", closable:true, parseOnLoad:false, style:"margin:0;padding:0;", executeScripts:false, extractContent:false});
-                // main_MainContainer.selectChild(pageContentPane);
-                pageContentPane1.set("content","");                                                console.log('pageContentPane1',pageContentPane1);
-                pageContentPane1.set("href","/ipage1");
-
-
-            pageContentPane1.onDownloadEnd= function() {   //console.log('pageContentPane1.onDownloadEnd',this);
-                            tagParser.parseThis(pageContentPane1.containerNode);
-                            };
-
-
-
-//                var dn=pageContentPane1.domNode;                                         console.log('pageContentPane1.domNode',pageContentPane1.domNode);
-//                var innerScriptTag=dn.getElementsByTagName("script");                          console.log('script123',innerScriptTag,innerScriptTag[0],innerScriptTag.length);
-//                // for(var item in script123)                                                 console.log('item=',item);
-//                // console.log('script123[0].innerText={',innerScriptTag[0].innerText+"}");
-//                // var script0="console.log(this); this.script0=function(){"+innerScriptTag[0].innerText+"}";                                                     console.log('script0',script0);
-//                var innerScriptText=innerScriptTag[0].innerText;
-//
-//
-//                var innerScriptTagItem=innerScriptTag[0], parent=innerScriptTagItem.parentNode;
-//                for(var i in parent.children){
-//                    var parentChild=parent.children[i];
-//                    if(parentChild==innerScriptTagItem)parent.children[i].remove();
-//                }
-//                // var s0="require(['dijit/registry'],function (registry){ var self=registry.byId('PageContentPane_1'); self.script0=function(){ console.log('script0'); }; self.script0(); })";
-//                var s0="require(['dijit/registry'],function (registry){ var self=registry.byId('PageContentPane_1'); self.script0=function(){ "+innerScriptText+" }; self.script0(); })";
-//                var n = document.createElement('script');n.type = "text/javascript";                            console.log('s0=',s0);
-//                pageContentPane1.domNode.appendChild(n);
-//                n.text = s0;
-//            };
-
-                // var pageContentPane2 =
-                //     APP.childFor(main_MainContainer, "PageContentPane_2",
-                //         XContentPane, {region: "center", title:"PageContentPane_2", closable:true, parseOnLoad:false, style:"margin:0;padding:0;", executeScripts:true, extractContent:false});
-                // // main_MainContainer.selectChild(pageContentPane);
-                // pageContentPane2.set("content","");                                                console.log('pageContentPane2',pageContentPane2);
-                // pageContentPane2.set("href","/ipage2");
-                // var dn2=pageContentPane2.domNode;                                         console.log('pageContentPane2.domNode',pageContentPane2.domNode);
+                var innerPage1 =
+                    APP.childFor(main_MainContainer, "innerPage_1",
+                        InnerPage, {region: "center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
             });
 </script>
 </html>

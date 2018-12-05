@@ -4,24 +4,29 @@ define(["dijit/form/TextBox","dijit/form/DateTextBox"],
             /**
              *
              */
-            createBaseTags: function(tag){                          //console.log("tag=",tag,tag.tagName);
+            createBaseTags: function(node){                                                         //console.log('tagParser.createBaseTags: node=',node);
                 var d;
-                if(tag.tagName=="TEXTBOX"){
-                    d=new TextBox({tagName:tag.tagName},tag);                 //console.log("t.domNode=",d.domNode.innerHTML.toString(),d.domNode);
-                    d.domNode.setAttribute("tagName",tag.tagName);
+                if(node.tagName=="TEXTBOX"){
+                    d=new TextBox({tagName:node.tagName},node);                                     //console.log("t.domNode=",d.domNode.innerHTML.toString(),d.domNode);
+                    d.domNode.setAttribute("tagName",node.tagName);
                     return d.domNode;
-                }else if(tag.tagName=="DATETEXTBOX"){
-                    d=new DateTextBox({tagName:tag.tagName},tag);                        // console.log("d.domNode=",d.domNode);
-                    d.domNode.setAttribute("tagName",tag.tagName);
+                }else if(node.tagName=="DATETEXTBOX"){
+                    d=new DateTextBox({tagName:node.tagName},node);                                 // console.log("d.domNode=",d.domNode);
+                    d.domNode.setAttribute("tagName",node.tagName);
                     return d.domNode;
                 }
             },
-            parseThis: function(domNode){                                              console.log('domNode.ChildNodes=',domNode.childNodes);
-                for(var i=0; i<domNode.childNodes.length;i++){
-                    var node = domNode.childNodes[i]; //, tagData=this.tags[node.tagName];                                               //console.log("node",node);
-                    //if(!tagData||!tagData.newNode)continue;
-                    if(this.createBaseTags(node))continue;
-                }
+            parseThis: function(containerNode){                                                     console.log('tagParser.parseThis: containerNode.ChildNodes=',containerNode.childNodes);
+                if(!containerNode)return;
+                this.parseContainer(0,containerNode);
+            },
+            parseContainer: function(ind,containerNode) {                                           //console.log('tagParser.parseContainer: containerNode.ChildNodes=', containerNode.childNodes);
+                var containerChild=containerNode.children[ind];
+                if(!containerChild)return;
+                var newNode=this.createBaseTags(containerChild);
+                if(newNode)                                                                         console.log('tagParser.parseThis createBaseTags: newNode=',newNode);
+                if(containerChild.children.length>0) this.parseContainer(0,containerChild);
+                this.parseContainer(ind+1,containerNode);
             }
         };
     });
