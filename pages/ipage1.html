@@ -16,35 +16,34 @@
         <th colspan="2">Inner Page1</th>
     </tr>
     <tr height="30px;">
-        <td><textBox></textBox></td>
-        <td><dateTextBox></dateTextBox></td>
+        <td><textBox id="textBox1" label="textBox1 value:" style="width:285px;"></textBox></td>
+        <td><dateTextBox id="dateTextBox1" label="date:" style="width:85px;"></dateTextBox></td>
     </tr>
     <tr></tr>
 </table>
 
-
-
-
 </body>
 <script type="text/javascript">                                                                     console.log('ipage1',this,self);
+
+$$("textBox1").val("QWErtyUIOp ASDfghJKL;");
+$$("dateTextBox1").val("2018-12-02");
+
+    // function f1(){
+    //     console.log('f1:',this,self);
+    // }
+    // f1();
     //
-    function f1(){
-        console.log('f1:',this,self);
-    }
-    f1();
-
-    var f2=function(){
-        console.log('f2:',this,self);
-    };
-    f2();
-
-    var o={
-
-        of1:function(){
-                                                            console.log('of1:',this,self);
-        }
-
-    };
-    o.of1();
-
+    // var f2=function(){
+    //     console.log('f2:',this,self);
+    // };
+    // f2();
+    //
+    // var o={
+    //
+    //     of1:function(){
+    //                                                         console.log('of1:',this,self);
+    //     }
+    //
+    // };
+    // o.of1();
 </script>

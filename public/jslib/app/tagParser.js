@@ -8,17 +8,26 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/l
             /**
              *
              */
-            createBaseTags: function(node){                                                         //console.log('tagParser.createBaseTags: node=',node);
-                var d;
+            createBaseTags: function(node){                                                             //console.log('tagParser.createBaseTags: node=',node);
+                var tagClass=null;
                 if(node.tagName=="TEXTBOX"){
-                    d=new TextBox({tagName:node.tagName},node);                                     //console.log("t.domNode=",d.domNode.innerHTML.toString(),d.domNode);
+                    tagClass=TextBox;
                 }else if(node.tagName=="DATETEXTBOX"){
-                    d=new DateTextBox({tagName:node.tagName},node);                                 // console.log("d.domNode=",d.domNode);
+                    tagClass=DateTextBox;
                 }
-                if(d){
-                    d.domNode.setAttribute("tagName",node.tagName);
-                    return d.domNode;
+                if(!tagClass)return;
+                var params={tagName:node.tagName};
+                this.parseNodeAttributes(node,["class","style"],params);
+                var d=new tagClass(params,node);
+                d.domNode.setAttribute("tagName",node.tagName);                                     //console.log('tagParser.createBaseTags: d=',d);
+                var label=node.getAttribute("label");
+                if(label){
+                    var l;
+                    d.domNode.parentNode.insertBefore(l=document.createElement("label"),d.domNode);
+                    d.labelTag=l;
+                    l.innerText=label; l.setAttribute("for",node.getAttribute("id"));
                 }
+                return d;
             },
             createContainerTags: function(node){
                 var tagClass=null;
@@ -31,13 +40,12 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/l
                 }else if(node.tagName=="CONTENTPANE"){
                     tagClass=ContentPane;
                 }
-                if(tagClass){
-                    var params={tagName:node.tagName};
-                    this.parseNodeAttributes(node,["region","design","gutters","tabPosition"],params);//
-                    var d=new tagClass(params,node);
-                    d.domNode.setAttribute("tagName",node.tagName);
-                    return d.domNode;
-                }
+                if(!tagClass)return;
+                var params={tagName:node.tagName};
+                this.parseNodeAttributes(node,["class","style","region","design","gutters","tabPosition"],params);
+                var d=new tagClass(params,node);
+                d.domNode.setAttribute("tagName",node.tagName);
+                return d;
             },
             createMenuTags: function(node){
                 var tagClass=null;
@@ -50,13 +58,12 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/l
                 }else if(node.tagName=="MENU"){
                     tagClass=Menu;
                 }
-                if(tagClass){
-                    var params={tagName:node.tagName};
-                    this.parseNodeAttributes(node,["region","tabPosition"],params);//
-                    var d=new tagClass(params,node);
-                    d.domNode.setAttribute("tagName",node.tagName);
-                    return d.domNode;
-                }
+                if(!tagClass)return;
+                var params={tagName:node.tagName};
+                this.parseNodeAttributes(node,["class","style","region","tabPosition"],params);//
+                var d=new tagClass(params,node);
+                d.domNode.setAttribute("tagName",node.tagName);
+                return d;
             },
             parseNodeAttributes:function(node,attributes,params){
                 for(var i in attributes){
@@ -65,18 +72,19 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/l
                     if(val)params[attrName]=val;
                 }
             },
-            parseThis: function(containerNode){                                                     console.log('tagParser.parseThis: containerNode.ChildNodes=',containerNode.childNodes);
+            parseThis: function(containerNode){                                                     //console.log('tagParser.parseThis: containerNode.ChildNodes=',containerNode.childNodes);
                 if(!containerNode)return;
                 this.parseContainer(0,containerNode);
             },
-            parseContainer: function(ind,containerNode) {                                           //console.log('tagParser.parseContainer: containerNode.ChildNodes=', containerNode.childNodes);
+            parseContainer: function(ind,containerNode) {
                 var containerChild=containerNode.children[ind];
-                if(!containerChild)return;
+                if(!containerChild)return;                                                          //console.log('tagParser.parseContainer: containerChild=', containerChild);
                 var newNode=this.createBaseTags(containerChild);
                 if(!newNode)newNode=this.createContainerTags(containerChild);
                 if(!newNode)newNode=this.createMenuTags(containerChild);
-                if(newNode)                                                                         console.log('tagParser.parseThis createBaseTags: newNode=',newNode);
+                //if(newNode)/*IT'S FOR TEST*/                                                      console.log('tagParser.parseThis createBaseTags: newNode=',newNode);
                 if(containerChild.children.length>0) this.parseContainer(0,containerChild);
+                if(newNode&&newNode.labelTag) ind++;
                 this.parseContainer(ind+1,containerNode);
             }
         };

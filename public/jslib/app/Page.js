@@ -7,7 +7,7 @@ define(["dojo/_base/declare","dijit/layout/BorderContainer","app/tagParser","app
                 },
                 postCreate :function(){
                     tagParser.parseThis(this.containerNode);
-                    scriptsParser.parseScripts(this.containerNode);
+                    // scriptsParser.parseScripts(this.containerNode);
                 }
             });
         });

@@ -33,6 +33,7 @@
     <link rel="stylesheet" type="text/css" href="/css/main.css" media="screen">
     <!--<link rel="stylesheet" type="text/css" href="/css/contentController.css" media="screen">-->
     <!--<script type="text/javascript" src="/jslib/jsBarcode/JsBarcode.ean-upc.min.js"></script>-->
+
 </head>
 <body class="claro">
 <page id="main_Page" style="">
@@ -47,17 +48,16 @@
     </BorderContainer>
     <TabContainer id="main_Tabs" region="center" tabPosition="top" class="mainContent"></TabContainer>
 </page>
-</body>
-<script type="text/javascript">                                     console.log("this=",this);
-require(["app/app", "app/Page","app/InnerPage",
-        "dijit/form/ToggleButton","dojo/domReady!"],
-    function (APP, Page,InnerPage,
-              ToggleButton) {                                                               console.log("START MAIN PAGE...");//!!!IT'S FOR TESTING!!!
-        var main_Page = APP.instanceForID("main_Page", Page, {design: "headline"});
-        main_Page.startup();
-        var innerPage1 =
-            APP.childFor(main_Page, "innerPage_1",
-                InnerPage, {region: "center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
-    });
+<script type="text/javascript" src="/jslib/app.js"></script>
+<script type="text/javascript">                                                                     console.log("main this=",this);
+$$(function(){                                                                                      console.log("START MAIN PAGE...");//!!!IT'S FOR TESTING!!!
+    $$("main_Page").pageInit({design: "headline"});                                console.log("$$(\"main_Page\")=",$$("main_Page"));
+    //$$("main_Page").addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
+    $$("main_Tabs").addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
+});
+
+// $$("123");
+// $$("123","234");
 </script>
+</body>
 </html>
