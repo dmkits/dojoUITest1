@@ -59,12 +59,12 @@ input {
     font-family : Tahoma,Arial,Helvetica;
 }
 
-#main_MainContainer{
+#main_Page{
     position: absolute; left: 0; top: 0; right: 0; bottom: 0;
     margin: 1px; padding: 0;
 }
 
-#main_TopContainer{
+#main_PageTop{
     height: 54px;
     margin: 0; padding: 0;
 }
@@ -94,7 +94,7 @@ input {
     border-left: none;
 }
 
-#main_ContentContainer{
+#main_Tabs{
     margin: 0; padding: 0;
 }
 .mainContent{

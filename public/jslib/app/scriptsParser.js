@@ -11,7 +11,7 @@ define(["dijit/form/TextBox","dijit/form/DateTextBox"],
                     for(var i=0;i<scripts.length;i++){
                         if(scripttext.length>0)scripttext+="\n";
                         scripttext =
-                            "require(['dijit/registry'],function(registry){ var self=registry.byId('"+containerNode.id+"'); self.script_"+i+"= function(){\n"+
+                            "require(['dijit/registry'],function(registry){ var self=registry.byId('"+containerNode.id+"'); self.script_"+i+"= function(){"+
                             scripts[i]+
                             "}; self.script_"+i+"(); });";
                     }

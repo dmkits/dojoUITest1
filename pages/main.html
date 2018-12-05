@@ -27,7 +27,7 @@
     <!--<link rel="stylesheet" href="/jslib/dijit/themes/soria/soria.css" media="screen">-->
     <!--<link rel="stylesheet" href="/jslib/dijit/themes/nihilo/nihilo.css" media="screen">-->
     <!--<link rel="stylesheet" href="/jslib/dijit/themes/tundra/tundra.css" media="screen">-->
-    <script type="text/javascript" src="/jslib/dojo/dojo.js" data-dojo-config="async:true,parseOnLoad:true"></script>
+    <script type="text/javascript" src="/jslib/dojo/dojo.js" data-dojo-config="async:true,parseOnLoad:false"></script>
 
     <!--<link rel="stylesheet" href="/css/htable.css" media="screen">-->
     <link rel="stylesheet" type="text/css" href="/css/main.css" media="screen">
@@ -35,41 +35,29 @@
     <!--<script type="text/javascript" src="/jslib/jsBarcode/JsBarcode.ean-upc.min.js"></script>-->
 </head>
 <body class="claro">
-<div id="main_MainContainer" style="">
-    <div id="main_TopContainer">
-        <div id="main_TopImg"></div>
-        <div id="main_MainMenu"></div>
-        <div id="main_TopInfoPane">
+<page id="main_Page" style="">
+    <BorderContainer id="main_PageTop" region="top" design="sidebar" class="mainTopContent" gutters="true">
+        <ContentPane id="main_TopImg" region="left" class="mainTopContent"></ContentPane>
+        <MenuBar id="main_MainMenu" region="top" class="mainTopContent"></MenuBar>
+        <ContentPane id="main_TopInfoPane" region="bottom" class="mainTopContent">
             <div id="main_configName"  style="display:inline;margin-left:10px;"></div>
             <div id="main_dbUsername" style="display:inline;margin-left:10px;"></div>
             <div id="main_dbEmpName" style="display:inline;margin-left:10px;"></div>
-        </div>
-    </div>
-    <div id="main_ContentContainer"></div>
-</div>
+        </ContentPane>
+    </BorderContainer>
+    <TabContainer id="main_Tabs" region="center" tabPosition="top" class="mainContent"></TabContainer>
+</page>
 </body>
-<script type="text/javascript">
-    require(["app/app", "dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/layout/TabContainer",
-                "dijit/MenuBar", "dijit/MenuBarItem", "dijit/PopupMenuBarItem", "dijit/Menu", "dijit/MenuItem", "dijit/MenuSeparator",
-                "dijit/form/ToggleButton", "dojox/layout/ContentPane",
-                "app/InnerPage","app/tagParser",
-                "dojo/domReady!"],
-            function (APP, BorderContainer, LayoutContainer, TabContainer,
-                      MenuBar, MenuBarItem, PopupMenuBarItem, Menu, MenuItem, MenuSeparator,
-                      ToggleButton, XContentPane,
-                      InnerPage,tagParser) {                                               console.log("START MAIN PAGE...");//!!!IT'S FOR TESTING!!!
-
-                var main_MainContainer = APP.instanceForID("main_MainContainer", BorderContainer, {design: "headline"});
-                // var main_TopContainer = APP.instanceForID("main_TopContainer", BorderContainer, {region: "top", design: "sidebar", class: "mainTopContent", gutters: true});
-                // var main_TopImg = APP.instanceForID("main_TopImg", ContentPane, {region: "left", class: "mainTopContent"});
-                // var main_MainMenu = APP.instanceForID("main_MainMenu", MenuBar, {region:"top", class: "mainTopContent"});
-                // var main_TopInfoPane = APP.instanceForID("main_TopInfoPane", ContentPane, {region: "bottom", class: "mainTopContent"});
-                // var main_ContentContainer = APP.instanceForID("main_ContentContainer", TabContainer, {region: "center", tabPosition: "top", class: "mainContent"});
-                main_MainContainer.startup();
-
-                var innerPage1 =
-                    APP.childFor(main_MainContainer, "innerPage_1",
-                        InnerPage, {region: "center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
-            });
+<script type="text/javascript">                                     console.log("this=",this);
+require(["app/app", "app/Page","app/InnerPage",
+        "dijit/form/ToggleButton","dojo/domReady!"],
+    function (APP, Page,InnerPage,
+              ToggleButton) {                                                               console.log("START MAIN PAGE...");//!!!IT'S FOR TESTING!!!
+        var main_Page = APP.instanceForID("main_Page", Page, {design: "headline"});
+        main_Page.startup();
+        var innerPage1 =
+            APP.childFor(main_Page, "innerPage_1",
+                InnerPage, {region: "center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
+    });
 </script>
 </html>
