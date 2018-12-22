@@ -52,8 +52,59 @@
 <script type="text/javascript">                                                                     //console.log("main this=",this);
 $$(function(){                                                                                      console.log("START MAIN PAGE...");//!!!IT'S FOR TESTING!!!
     $$("main_Page").pageInit({design: "headline"});                                console.log("$$(\"main_Page\")=",$$("main_Page"));
+
+    // $$("main_MainMenu")
+    var createMainMenu = function(mainMenuData){
+        var mainMenu=$$("main_MainMenu");                                console.log("mainMenu=",mainMenu);
+        for(var i in mainMenuData) {
+            var mainMenuDataItem=mainMenuData[i];
+            if (!mainMenuDataItem.popupMenu||mainMenuDataItem.popupMenu.length==0){                                //console.log("mainMenuDataItem",mainMenuDataItem);
+                mainMenu.addMenu("MenuBarItem", {id:mainMenuDataItem.menuItemName,label:mainMenuDataItem.menuTitle, itemData:mainMenuDataItem,
+                    click:function(of,e){
+                        console.log(of.instance().id+" "+of.instance().label+" click",of,e);
+                    }
+                });
+                continue;
+            }
+            // make sub-menu
+            mainMenu.addMenu("PopupMenuBarItem", {id:mainMenuDataItem.menuItemName, label: mainMenuDataItem.menuTitle},
+                function(menuBarF){                                console.log("menuBarF=",menuBarF);
+                    for(var pi in mainMenuDataItem.popupMenu) {
+                        var popupMenuItem=mainMenuDataItem.popupMenu[pi];
+                        var popupMenuItemName = popupMenuItem.menuItemName;
+                        if (popupMenuItemName&&popupMenuItemName.indexOf("separator")==0) {
+                            menuBarF.addMenu("MenuSeparator", {id:popupMenuItem.menuItemName});
+                            continue;
+                        }
+                        menuBarF.addMenu("MenuItem", {id:popupMenuItem.menuItemName,label:popupMenuItem.menuTitle, itemData:popupMenuItem,
+                            click:function(of,e){
+                                console.log(of.instance().id+" "+of.instance().label+" click",of,e);
+                            }
+                        });
+                    }
+                    //     popupMenuF.instance().startup();
+                });
+        }
+    };
+    var mainMenu=[
+        { "menuItemName":"menuBarItemRec", "menuTitle":"Приход товара", "pageTitle":"Приход товара", "module":"rec", "closable":false },
+        { "menuItemName":"menuBarItemReportsProds", "menuTitle":"Товарные отчеты", "pageTitle":"Товарные отчеты", "closable":false,
+            popupMenu:[
+                {menuTitle:"Остатки товаров"},
+                {menuItemName:"separator1"},
+                {menuTitle:"Движение товаров"}
+            ]
+        },
+        { "menuItemName":"menuBarItemReportsCashier", "menuTitle":"Отчеты кассира", "pageTitle":"Отчеты кассира", "module":"reportsCashier", "closable":false },
+        { "menuItemName":"menuBarItemHelpAbout", "menuTitle":"О программе", "action":"help_about" },
+        { "menuItemName":"menuBarItemClose", "menuTitle":"Выход", "action":"close" }
+    ];
+    setTimeout(function () {
+        createMainMenu(mainMenu);
+    },1000);
+
     //$$("main_Page").addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
-    $$("main_Tabs").addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
+    // $$("main_Tabs").addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
 });
 
 // $$("123");

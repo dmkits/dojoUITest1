@@ -1,5 +1,5 @@
                                                                                                         console.log("app",this);//!!!IT'S FOR TESTING!!!
-var doc=this.document;
+// var doc=this.document;
 require(["dijit/registry","app/Page","app/InnerPage"],function (registry,Page,InnerPage){
 });
 // require(["dijit/registry", "dojo/dom-style", "app/app", "app/Page","app/InnerPage",
@@ -14,6 +14,12 @@ require(["dijit/registry","app/Page","app/InnerPage"],function (registry,Page,In
 //         //         InnerPage, {region: "center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
 //     });
 
+/**
+ * args = function | "<id>" | ["<id1>","<id2>", ... ]
+ *      if args function - run function in callback require ["dojo/domReady!"]
+ *      if args  = "<id>" - run $$Functions({id:"<id>",instance:dijit.registry.byId("<id>")})
+ *      if args is array - run $$Functions([ {id:"<id1>",instance:dijit.registry.byId("<id1>")}, {id:"<id2>",instance:dijit.registry.byId("<id2>")}, ... ])
+*/
 $$= function(args){                                                                                     //console.log("$$",args,this);
     if(typeof(args)==="function"){
         require(["dojo/domReady!"],function () {                                                        console.log("$$ run");//!!!IT'S FOR TESTING!!!
@@ -33,96 +39,176 @@ $$= function(args){                                                             
         return new $$Functions(ao);
     }
 };
-$$Functions= function(params){                                                                      //console.log("$$Functions ",params);
+/**
+ * opts = <o> | [<o1>,<o2>, ... ]
+ *      <o> - { id:<id of instance of dojo or dijit>, instance:<instance of dojo or dijit> }
+*/
+function $$Functions(objs){                                                                      //console.log("$$Functions ",params);
     var global=window;
-    return{
-        o:params,
-        action:function(action){
-            if(typeof(this.o)!="object"||(typeof(this.o)=="object"&&this.o.length===undefined/*not array*/)){
-                action(this.o);
+    this.o=objs;
+    this.instance=function(){
+        return this.o.instance;
+    };
+    /**
+     * action = function(o)
+     * call action for all this.o objects with param function(o)), o = { id, instance }
+     */
+    this.action=function(action){
+        if(typeof(this.o)!="object"||(typeof(this.o)=="object"&&this.o.length===undefined/*not array*/)){
+            action(this.o);
+            return;
+        }
+        for (var oKey in this.o) {
+            var o = this.o[oKey]; action(o);
+        }
+    };
+    /**
+     * action = function(<$$Functions>)
+     * call action for all this.o objects with param function(new $$Functions({id:o.id,instance:o.instance}))
+     */
+    this.actionF=function(action){
+        if(typeof(this.o)!="object"||(typeof(this.o)=="object"&&this.o.length===undefined/*not array*/)){
+            action(this); return;
+        }
+        for (var oKey in this.o) {
+            var o = this.o[oKey]; action(new $$Functions({id:o.id,instance:o.instance}));
+        }
+    };
+    /**
+     * return $$Functions = <this>
+     */
+    this.pageInit=function(initParams){
+        this.action(function(o){
+            initParams.id=o.id;
+            o.instance=new global.Page(initParams,initParams.id); o.instance.startup();
+        });
+        return this;
+    };
+    /**
+     * create new Class(params)
+     * return new $$Functions({id:params.id,instance:<new of Class(params)>})
+     */
+    this.addNew= function(Class, params){
+        if (!params) params={};
+        var newInstance=new Class(params);
+        return new $$Functions({id:newInstance.id,instance:newInstance});
+    };
+    /**
+     * add child = new Class(params) to o.instance
+     * return $$Functions({id:childInstance.id,instance:childInstance})
+     */
+    this.addChildTo= function(o, Class, params) {                                                           //console.log("addChildTo o",o);
+        if(!o||!o.instance) return;
+        if (!params) params={};
+        var childF= this.addNew(Class, params);
+        o.instance.addChild(childF.instance());                               //console.log("addChild=",params,childInstance);
+        return childF;
+    };
+    /**
+     * call addCallback(childFunctions) for each added child
+     */
+    this.addMenu=function(menuClassName,params,addCallback){
+        var self=this, menuClass=global.dijit[menuClassName];
+        if(!menuClass){
+            console.error("CALL addMenu: dijit/"+menuClassName+" NOT INITIALIZED!!!"); return;
+        }
+        this.action(function(o){
+            if(menuClassName=="PopupMenuBarItem"){
+                var popupMenuClass=global.dijit["Menu"];
+                if(!popupMenuClass){
+                    console.error("CALL addMenu: dijit/"+popupMenuClass+" NOT INITIALIZED!!!"); return;
+                }
+                var newMenuF= self.addNew(menuClass,params), newPopupMenuF= self.addNew(popupMenuClass,{id:params.id+"_menu"}),
+                    newMenuFinstance=newMenuF.instance();
+                newMenuFinstance.set("popup",newPopupMenuF.instance());
+                o.instance.addChild(newMenuFinstance);
+                newMenuF.setHandlers(params);
+                if(addCallback)addCallback(newPopupMenuF);
                 return;
             }
-            for (var oKey in this.o) {
-                var o = this.o[oKey]; action(o);
-            }
-        },
-        pageInit:function(initParams){
-            this.action(function(o){
-                initParams.id=o.id;
-                o.instance=new global.Page(initParams,initParams.id); o.instance.startup();
-            });
-            return this;
-        },
-        addChildTo: function(o, Class, params) {
-            if (!params) params={};
-            var childInstance = new Class(params);
-            if (o.instance!=null) o.instance.addChild(childInstance);
-        },
-        addInnerPage:function(params){
-            var addChildTo=this.addChildTo;
-            this.action(function(o){
-                addChildTo(o, global.InnerPage,params);
-            });
-            return this;
-        },
-        set:function(param,value){
-            this.action(function(o){
-                o.instance.set(param,value);
-            });
-        },
-        val:function(value){
-            if(value===undefined) {
-                var values=[];
-                this.action(function(o){
-                    values.push(o.instance.get("value"));
-                });
-                return (values.length<=1)?values[0]:values;
-            }
-            this.action(function(o){
-                o.instance.set("value",value);
-            });
-        },
-        style:function(name,value){
-            this.action(function(o){
-                o.instance.domNode.style[name]=value;
-            });
-            return this;
-        },
-        click:function(handler){
-            this.action(function(o){
-                o.instance.onClick=handler;
-            });
-            return this;
-        }
-    }
-};
+            var childFunctions= self.addChildTo(o,menuClass,params);
+            childFunctions.setHandlers(params);
+            if(addCallback)addCallback(childFunctions);
 
-// $$scriptParser={
-//     parseScripts :function(containerNode){
-//         var scripts=this.grabScripts(containerNode);                                        console.log("$$scriptParser.parseScripts scripts=",scripts);
-//         if(scripts.length==0)return;
-//         for(var i=0;i<scripts.length;i++){
-//             var scriptData=scripts[i];
-//             scriptData.parentNode.removeChild(scriptData.scriptNode);
-//             var n = scriptData.parentNode.ownerDocument.createElement('script');
-//             n.type = "text/javascript";
-//             scriptData.parentNode.appendChild(n);
-//             var scripttext =
-//                 "require(['dijit/registry'],function(registry){ var self=registry.byId('"+scriptData.parentNode.id+"'); self.script_"+i+"= function(){"+
-//                 scriptData.script+
-//                 "}; self.script_"+i+"(); });";
-//             n.text = scripttext;
-//         }
-//     },
-//     grabScripts: function (containerNode){
-//         var scripts=[], scriptsNodes=containerNode.getElementsByTagName("script");
-//         for (var i = 0; i < scriptsNodes.length; i++) {
-//             var scriptNode=scriptsNodes[i];
-//             if(scriptNode.src.length!=0)continue;
-//             scripts.push({scriptNode:scriptNode,parentNode:scriptNode.parentNode,script:scriptNode.innerText});
-//
-//         }
-//         return(scripts);
-//     }
-// };
-//$$scriptParser.parseScripts(this.document);                                       // console.log("grabScripts=",$$scriptParser.grabScripts(this.document));
+        });
+        return this;
+    };
+    /**
+     * return $$Functions = <this>
+     */
+    this.addInnerPage=function(params){
+        var addChildTo=this.addChildTo;
+        this.action(function(o){
+            addChildTo(o, global.InnerPage,params);
+        });
+        return this;
+    };
+    /**
+     * set prop of <this>.o instance
+     * return $$Functions = <this>
+     */
+    this.set=function(param,value){                                console.log("param=",param," value=",value);
+        this.action(function(o){
+            o.instance.set(param,value);
+        });
+        return this;
+    };
+    this.setActionFor=function(ownersF,actionName,actionHandler){
+        if(!ownersF||!actionName||!actionHandler)return;
+        ownersF.actionF(function(of){
+            var instance;
+            if(!(instance=of.instance())) return;
+            instance.set(actionName,function(e){
+                actionHandler(of,e);
+            })
+        });
+    };
+    /**
+     * actionHandlers = { <action name>:<action function> >}
+     * return $$Functions = <this>
+     */
+    this.setHandlers=function(actionHandlers){
+        for (var actionName in actionHandlers) {
+            var actionHandler=actionHandlers[actionName];
+            if(actionName=="click")
+                this.setActionFor(this,"onClick",actionHandler);
+        }
+        return this;
+    };
+    /**
+     * get <this>.o instance value's (array) OR set value of <this>.o instance
+     * if set - return $$Functions = <this>
+     */
+    this.val=function(value){
+        if(value===undefined) {
+            var values=[];
+            this.action(function(o){
+                values.push(o.instance.get("value"));
+            });
+            return (values.length<=1)?values[0]:values;
+        }
+        this.action(function(o){
+            o.instance.set("value",value);
+        });
+        return this;
+    };
+    /**
+     * set style of <this>.o domNode
+     * return $$Functions = <this>
+     */
+    this.style=function(name,value){
+        this.action(function(o){
+            o.instance.domNode.style[name]=value;
+        });
+        return this;
+    };
+    /**
+     * return $$Functions = <this>
+     */
+    this.click=function(handler){
+        this.action(function(o){
+            o.instance.onClick=handler;
+        });
+        return this;
+    }
+}
