@@ -74,11 +74,11 @@ input {
     margin: 1px; padding: 0;
 }
 
-.sysadmin_Top{
+.sysadmin_TopContent{
     background: #eee;
     /*border: solid 1px;*/
 }
-#sysadmin_Top{
+#sysadmin_TopContainer{
     margin: 0; padding: 0;
     height: 63px;
     /*height: 75px;*/
@@ -110,7 +110,7 @@ input {
 
 .sysadmin_Content{
 }
-#sysadmin_InnerPages{
+#sysadmin_ContentContainer{
     margin: 0; padding: 0;
     /*background-image: image("/imgs/bata.jpg");*/
 

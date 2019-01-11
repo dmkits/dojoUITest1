@@ -5,7 +5,7 @@ define(["dojo/_base/declare","dijit/layout/ContentPane","app/tagParser","app/scr
                     this.parseOnLoad=false;
                     declare.safeMixin(this,args);
                 },
-                onLoad :function(){
+                onLoad :function(){                                                                         console.log('InnerPage.onLoad',this.containerNode);
                     tagParser.parseThis(this.containerNode);
                     scriptsParser.parseScripts(this.containerNode);
                 }

@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
     <!--<link rel="icon" type="image/gif" href="/icons/moda32x32.ico"/>-->
-    <!--<![endif]&ndash;&gt;-->
-    <!--<script src="/jslib/handsontable-0.29.1/handsontable.full.min.js"></script>-->
-    <!--<link rel="stylesheet" media="screen" href="/jslib/handsontable-0.29.1/handsontable.full.min.css">-->
-    <!--<script src="/jslib/handsontable-0.29.1/numbro/languages/ru-RU.min.js"></script>-->
-    <!--<script src="/jslib/numeral/languages/ru.js"></script>-->
-    <!--<script src="/jslib/moment/moment-with-locales.js"></script>-->
+    <![endif]-->
+    <script src="/jslib/handsontable-0.29.1/handsontable.full.min.js"></script>
+    <link rel="stylesheet" media="screen" href="/jslib/handsontable-0.29.1/handsontable.full.min.css">
+    <script src="/jslib/handsontable-0.29.1/numbro/languages/ru-RU.min.js"></script>
+    <script src="/jslib/numeral/languages/ru.js"></script>
+    <script src="/jslib/moment/moment-with-locales.js"></script>
     <link rel="stylesheet" href="/jslib/dijit/themes/claro/claro.css" media="screen">
     <script type="text/javascript" src="/jslib/dojo/dojo.js" data-dojo-config="async:true,parseOnLoad:false"></script>
-    <!--<link rel="stylesheet" href="/css/htable.css" media="screen">-->
+    <link rel="stylesheet" href="/css/htable.css" media="screen">
     <link rel="stylesheet" type="text/css" href="/css/sysadmin.css" media="screen">
+    <script type="text/javascript" src="/jslib/app.js"></script>
 </head>
 <body class="claro">
-<page id="sysadmin_Page" style="display:none">
-    <BorderContainer id="sysadmin_Top" style="height:63px; margin:0; padding:0" region="top" design="sidebar" class="sysadmin_Top" gutters="true">
-        <ContentPane id="sysadmin_TopImg" region="left" class="sysadmin_Top"></ContentPane>
-        <ContentPane id="sysadmin_TopStateInfo" region="top" class="sysadmin_Top">
+<page id="sysadmin_Page" design="headline">
+    <BorderContainer id="sysadmin_TopContainer" region="top" design="sidebar" class="mainTopContent" gutters="true" style="height:63px; margin:0; padding:0">
+        <ContentPane id="sysadmin_TopImg" region="left" class="sysadmin_TopContent"></ContentPane>
+        <ContentPane id="sysadmin_TopStateInfo" region="top" class="sysadmin_TopContent">
             <!--<div id="sysadmin_app_user" style="display:inline;"></div>-->
             <div id="sysadmin_app_mode" style="display:inline;margin-left:20px;"></div>
             <div id="sysadmin_ConnUserName" style="display:inline;;margin-left:20px;"></div>
@@ -28,62 +29,48 @@
             <div id="sysadmin_modulesFailures" style="display:inline;margin-left:20px;"></div>
             <div id="sysadmin_dbValidateState" style="display:inline;margin-left:20px;"></div>
         </ContentPane>
-        <ContentPane id="sysadmin_TopActions" region="bottom" class="sysadmin_Top">
-            <table>
-                <tr>
-                    <td><ToggleButton id="sysadmin_btnStartupConfig" iconClass="dijitCheckBoxIcon">Startup configuration</ToggleButton></td>
-                    <td><ToggleButton id="sysadmin_btnDatabase" iconClass="dijitCheckBoxIcon">Database</ToggleButton></td>
-                    <!--<td><button id="sysadmin_btnAppModelSettings">AppModelSettings</button></td>-->
-                    <!--<td><button id="sysadmin_btnSynchronization">Synchronization</button></td>-->
-                    <td><ToggleButton id="sysadmin_btnLogins" iconClass="dijitCheckBoxIcon">Logins</ToggleButton></td>
-                    <td><ToggleButton id="sysadmin_btnLogs" iconClass="dijitCheckBoxIcon">Logs</ToggleButton></td>
-                    <td width="500px"></td>
-                    <td><Button id="btnLogout">Logout</Button></td>
-                </tr>
-            </table>
+        <ContentPane id="sysadmin_TopActions" region="bottom" class="sysadmin_TopContent">
+            <StackController style="" containerId="sysadmin_ContentContainer"></StackController>
+
+            <ToggleButton id="sysadmin_btn1" iconClass="dijitCheckBoxIcon">ToggleButton1</ToggleButton>
+
+            <Button id="sysadmin_btnLogout" style="position:absolute;right:5px;">Logout</Button>
+            <!--<table>-->
+                <!--<tr>-->
+                    <!--<td><ToggleButton id="sysadmin_btnStartupConfig" iconClass="dijitCheckBoxIcon">Startup configuration</ToggleButton></td>-->
+                    <!--<td><ToggleButton id="sysadmin_btnDatabase" iconClass="dijitCheckBoxIcon">Database</ToggleButton></td>-->
+                    <!--&lt;!&ndash;<td><ToggleButton id="sysadmin_btnAppModelSettings" iconClass="dijitCheckBoxIcon">AppModelSettings</ToggleButton></td>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<td><ToggleButton id="sysadmin_btnSynchronization" iconClass="dijitCheckBoxIcon">Synchronization</ToggleButton></td>&ndash;&gt;-->
+                    <!--<td><ToggleButton id="sysadmin_btnLogins" iconClass="dijitCheckBoxIcon">Logins</ToggleButton></td>-->
+                    <!--<td><ToggleButton id="sysadmin_btnLogs" iconClass="dijitCheckBoxIcon" ToggleGroup="1">Logs</ToggleButton></td>-->
+                    <!--<td width="500px"></td>-->
+                    <!--<td><ToggleButton id="btnLogout" iconClass="dijitCheckBoxIcon">Logout</ToggleButton></td>-->
+                <!--</tr>-->
+            <!--</table>-->
         </ContentPane>
     </BorderContainer>
-    <StackContainer id="sysadmin_InnerPages" region="center" tabPosition="top" class="sysadmin_Content"></StackContainer>
+    <StackContainer id="sysadmin_ContentContainer" region="center" tabPosition="top" class="sysadmin_Content" childIconClass="dijitCheckBoxIcon">
+        <InnerPage title="Startup config" iconClass="dijitCheckBoxIcon" href="/sysadmin/startupConfig">
+            <div>123</div>
+        </InnerPage>
+        <ContentPane title="Logs" iconClass="dijitCheckBoxIcon">
+            <div>123456</div>
+        </ContentPane>
+        <InnerPage title="Database" iconClass="dijitCheckBoxIcon" href="/sysadmin/Database">
+            <div>1234565789</div>
+        </InnerPage>
+    </StackContainer>
 </page>
-<script type="text/javascript" src="/jslib/app.js"></script>
-<script type="text/javascript">
-    // moment.locale("uk");
-
-    // var functionalButtons=[];
-
-    // var btnStartupConfig = new ToggleButton({id:"sysadmin_btnStartupConfig",iconClass:'dijitCheckBoxIcon'},"sysadmin_btnStartupConfig");
-    // functionalButtons.push(btnStartupConfig);
-    // var sysadmin_btnDatabase = new ToggleButton({id:"sysadmin_btnDatabase",iconClass:'dijitCheckBoxIcon'},"sysadmin_btnDatabase");
-    // functionalButtons.push(sysadmin_btnDatabase);
-    // //                var sysadmin_btnAppModelSettings = new ToggleButton({id:"sysadmin_btnAppModelSettings",iconClass:'dijitCheckBoxIcon'},"sysadmin_btnAppModelSettings");
-    // //                functionalButtons.push(sysadmin_btnAppModelSettings);
-    // //                var sysadmin_btnSynchronization=new ToggleButton({id:"sysadmin_btnSynchronization",iconClass:'dijitCheckBoxIcon'},"sysadmin_btnSynchronization" );
-    // //                functionalButtons.push(sysadmin_btnSynchronization);
-    // var btnLogins=new ToggleButton({id:"sysadmin_btnLogins",iconClass:'dijitCheckBoxIcon'},"sysadmin_btnLogins" );
-    // functionalButtons.push(btnLogins);
-    // var btnLogs=new ToggleButton({id:"sysadmin_btnLogs",iconClass:'dijitCheckBoxIcon'},"sysadmin_btnLogs" );
-    // functionalButtons.push(btnLogs);
-    // var btnLogout = new ToggleButton({id:"btnLogout"},"btnLogout");
-    // var contentContainer = APP.instanceForID("sysadmin_ContentContainer",StackContainer, {region: "center", tabPosition: "top", class: "sysadmin_Content"});
-    // document.body.style.display = "";
-    // mainContainer.startup();
-    $$(function(){                                                                                      console.log("START SYSADMIN PAGE...");//!!!IT'S FOR TESTING!!!
-        $$("sysadmin_Page").pageInit({design: "headline", style:"display:inherit"});
-        //$$("main_Page").addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
-
-        $$("btnLogout").click(function(e){
-            window.location.replace(window.location.href);
-        });
-        $$(["sysadmin_btnStartupConfig","sysadmin_btnDatabase","sysadmin_btnLogins","sysadmin_btnLogs"]).click(function(e){
-            // window.location.replace(window.location.href);
-                                            console.log("e=",e);
-            $$(["sysadmin_btnStartupConfig","sysadmin_btnDatabase","sysadmin_btnLogins","sysadmin_btnLogs"]).set("checked",false);
-            e.target.set("checked",true);
-
-        });
-        // $$("sysadmin_InnerPages").addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
-    });
-
-</script>
 </body>
+<script type="text/javascript">
+    $$.startupPage("#sysadmin_Page",function() {                                                            console.log("START SYSADMIN PAGE...",this);//!!!IT'S FOR TESTING!!!
+        this.page.sysadmin_btnLogout.onClick=function(){                                                    console.log("sysadmin_btnLogout onClick");
+            window.location.replace(window.location.href);
+
+        };
+
+        this.$("#sysadmin_app_mode").innerText="APP MODE";                                                  console.log("sysadmin_app_mode",this.$("#sysadmin_app_mode"));
+
+    });
+</script>
 </html>

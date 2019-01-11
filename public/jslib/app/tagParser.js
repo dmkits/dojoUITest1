@@ -1,14 +1,16 @@
-define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/layout/TabContainer", "dijit/layout/StackContainer", "dojox/layout/ContentPane",
+define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/layout/ContentPane",
+        "dijit/layout/TabContainer", "dijit/layout/StackContainer","dijit/layout/StackController",
         "dijit/MenuBar", "dijit/MenuBarItem", "dijit/PopupMenuBarItem", "dijit/Menu", "dijit/MenuItem", "dijit/MenuSeparator",
         "dijit/form/Button","dijit/form/ToggleButton", "dijit/form/TextBox","dijit/form/DateTextBox"],
-    function(BorderContainer,LayoutContainer,TabContainer, StackContainer, ContentPane,
+    function(BorderContainer,LayoutContainer,ContentPane,
+             TabContainer, StackContainer, StackController,
              MenuBar, MenuBarItem, PopupMenuBarItem, Menu, MenuItem, MenuSeparator,
              Button,ToggleButton, TextBox, DateTextBox){
         return {
             /**
              *
              */
-            createBaseTags: function(node){                                                             //console.log('tagParser.createBaseTags: node=',node);
+            createBaseTags: function(node){                                                                 //console.log('tagParser.createBaseTags: node=',node);
                 var tagClass=null;
                 if(node.tagName=="TEXTBOX"){
                     tagClass=TextBox;
@@ -21,15 +23,19 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/l
                 }
                 if(!tagClass)return;
                 var params={tagName:node.tagName};
-                this.parseNodeAttributes(node,["class","style", "iconClass"],params);
+                this.parseNodeAttributes(params,node,["class","style", "iconClass","aria-disabled"]);
                 var d=new tagClass(params,node);
-                d.domNode.setAttribute("tagName",node.tagName);                                     //console.log('tagParser.createBaseTags: d=',d);
+                d.domNode.setAttribute("tagName",node.tagName);                                             //console.log('tagParser.createBaseTags: d=',d);
                 var label=node.getAttribute("label");
                 if(label){
-                    var l;
+                    var l, labelstyle=node.getAttribute("labelstyle");
                     d.domNode.parentNode.insertBefore(l=document.createElement("label"),d.domNode);
                     d.labelTag=l;
                     l.innerText=label; l.setAttribute("for",node.getAttribute("id"));
+                    if(labelstyle){
+                        if(labelstyle.indexOf("width")>=0)labelstyle="display: inline-block;"+labelstyle;
+                        l.setAttribute("style",labelstyle);
+                    }
                 }
                 return d;
             },
@@ -39,15 +45,21 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/l
                     tagClass=BorderContainer;
                 }else if(node.tagName=="LAYOUTCONTAINER"){
                     tagClass=LayoutContainer;
-                }else if(node.tagName=="TABCONTAINER"){
-                    tagClass=TabContainer;
                 }else if(node.tagName=="CONTENTPANE"){
                     tagClass=ContentPane;
+                }else if(node.tagName=="TABCONTAINER"){
+                    tagClass=TabContainer;
+                }else if(node.tagName=="STACKCONTAINER"){
+                    tagClass=StackContainer;
+                }else if(node.tagName=="STACKCONTROLLER"){
+                    tagClass=StackController;
                 }
                 if(!tagClass)return;
                 var params={tagName:node.tagName};
-                this.parseNodeAttributes(node,["class","style","region","design","gutters","tabPosition"],params);
-                var d=new tagClass(params,node);
+                this.parseNodeAttributes(params,node,
+                    ["class","style","region","design","gutters","tabPosition","containerId","title","iconClass"],
+                    {"childIconClass":"iconClass"});
+                var d=new tagClass(params,node);                                                            //console.log('tagParser.createContainerTags: d=',d);
                 d.domNode.setAttribute("tagName",node.tagName);
                 return d;
             },
@@ -64,32 +76,49 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dijit/l
                 }
                 if(!tagClass)return;
                 var params={tagName:node.tagName};
-                this.parseNodeAttributes(node,["class","style","region","tabPosition"],params);//
+                this.parseNodeAttributes(params,node,["class","style","region","tabPosition"]);//
                 var d=new tagClass(params,node);
                 d.domNode.setAttribute("tagName",node.tagName);
                 return d;
             },
-            parseNodeAttributes:function(node,attributes,params){
+            parseCFunctions:[],
+            parseNodeAttributes:function(params,node,attributes,childAttributes){
                 for(var i in attributes){
                     var attrName=attributes[i];
                     var val=node.getAttribute(attrName);
                     if(val)params[attrName]=val;
                 }
+                if(!childAttributes)return;
+                for(var childAttrName in childAttributes){
+                    var val=node.getAttribute(childAttrName);
+                    if(!val)continue;
+                    var childRealAttrName=childAttributes[childAttrName];
+                    if(!params.ChildWidgetProperties)params.ChildWidgetProperties={};
+                    params.ChildWidgetProperties[childRealAttrName]=val;
+                }
             },
-            parseThis: function(containerNode){                                                     //console.log('tagParser.parseThis: containerNode.ChildNodes=',containerNode.childNodes);
+            parseThis: function(containerNode,container){                                                    //console.log('tagParser.parseThis: containerNode.ChildNodes=',containerNode.childNodes);
                 if(!containerNode)return;
-                this.parseContainer(0,containerNode);
+                this.parseContainer(0,containerNode,container);
             },
-            parseContainer: function(ind,containerNode) {
+            parseContainer: function(ind,containerNode,container) {
                 var containerChild=containerNode.children[ind];
-                if(!containerChild)return;                                                          //console.log('tagParser.parseContainer: containerChild=', containerChild);
+                if(!containerChild)return;                                                                  //console.log('tagParser.parseContainer: containerChild=', containerChild);
                 var newNode=this.createBaseTags(containerChild);
                 if(!newNode)newNode=this.createContainerTags(containerChild);
                 if(!newNode)newNode=this.createMenuTags(containerChild);
-                //if(newNode)/*IT'S FOR TEST*/                                                      console.log('tagParser.parseThis createBaseTags: newNode=',newNode);
-                if(containerChild.children.length>0) this.parseContainer(0,containerChild);
+                if(!newNode&&this.parseCFunctions)
+                    for (var fInd in this.parseCFunctions) {
+                        var parseFunction=this.parseCFunctions[fInd];
+                        if(!parseFunction)continue;
+                        newNode=parseFunction(containerChild);
+                        if(newNode)break;
+                    }
+                //if(newNode)/*IT'S FOR TEST*/                                                                console.log('tagParser.parseThis createBaseTags: newNode=',newNode);
+                if(newNode&&container)container[newNode.id]=newNode;
+                if(containerChild.children.length>0) this.parseContainer(0,containerChild,container);
                 if(newNode&&newNode.labelTag) ind++;
-                this.parseContainer(ind+1,containerNode);
+                this.parseContainer(ind+1,containerNode,container);
             }
         };
     });

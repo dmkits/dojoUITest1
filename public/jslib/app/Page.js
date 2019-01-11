@@ -1,12 +1,29 @@
-define(["dojo/_base/declare","dijit/layout/BorderContainer","app/tagParser","app/scriptsParser"],
-        function(declare,BorderContainer,tagParser,scriptsParser){
+define(["dojo/_base/declare","dijit/layout/BorderContainer","app/tagParser","app/scriptsParser","app/InnerPage"],
+        function(declare,BorderContainer,tagParser,scriptsParser,InnerPage){
             return declare("Page",BorderContainer,{
                 constructor: function(args){
                     this.parseOnLoad=false;
+                    var domNode=document.getElementById(args.id);
+                    if(!domNode)return;
+                    tagParser.parseNodeAttributes(args,domNode,["design"]);
                     declare.safeMixin(this,args);
                 },
                 postCreate :function(){
-                    tagParser.parseThis(this.containerNode);
+                    var createInnerPageTags= function(node){
+                        var tagClass=null;
+                        if(node.tagName=="INNERPAGE"){
+                            tagClass=InnerPage;
+                        }
+                        if(!tagClass)return;
+                        var params={tagName:node.tagName};
+                            tagParser.parseNodeAttributes(params,node,["class","style","region","design","gutters","title","iconClass","href"]);
+                        var d=new tagClass(params,node);                                                    console.log('Page.postCreate createInnerPageTags: d=',d);
+                        d.domNode.setAttribute("tagName",node.tagName);
+                        return d;
+                    };
+                    tagParser.parseCFunctions.push(createInnerPageTags);
+                    this.page={};this.page[this.id]=this;
+                    tagParser.parseThis(this.containerNode,this.page);
                 }
             });
         });

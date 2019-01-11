@@ -1,35 +1,37 @@
-                                                                                                        console.log("app",this);//!!!IT'S FOR TESTING!!!
-// var doc=this.document;
-require(["dijit/registry","app/Page","app/InnerPage"],function (registry,Page,InnerPage){
-});
-// require(["dijit/registry", "dojo/dom-style", "app/app", "app/Page","app/InnerPage",
-//         "dijit/form/ToggleButton"],
-//     function (registry, domStyle, APP, Page,InnerPage,
-//               ToggleButton) {                                                               console.log("app require",this);//!!!IT'S FOR TESTING!!!
-//         var doc=this.document;
-//         // var main_Page = APP.instanceForID("main_Page", Page, {design: "headline"});
-//         // main_Page.startup();
-//         // var innerPage1 =
-//         //     APP.childFor(main_Page, "innerPage_1",
-//         //         InnerPage, {region: "center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
-//     });
+var body=document.body;
+if(body) body.style.display="none";
+var global=window;                                                                                          console.log("app",this);//!!!IT'S FOR TESTING!!!
+require(["dijit/registry","app/Page","app/InnerPage","app/dialogs","app/request"],
+    function (registry,Page,InnerPage,dialogs,request){
+        global.$$.dialogs= dialogs;
+        global.$$.request= request;
+    });                                                                                                     console.log("global=window=",window);
 
 /**
  * args = function | "<id>" | ["<id1>","<id2>", ... ]
- *      if args function - run function in callback require ["dojo/domReady!"]
+ *      if args function - run function in callback require ["dojo/ready"]
  *      if args  = "<id>" - run $$Functions({id:"<id>",instance:dijit.registry.byId("<id>")})
  *      if args is array - run $$Functions([ {id:"<id1>",instance:dijit.registry.byId("<id1>")}, {id:"<id2>",instance:dijit.registry.byId("<id2>")}, ... ])
 */
-$$= function(args){                                                                                     //console.log("$$",args,this);
-    if(typeof(args)==="function"){
-        require(["dojo/domReady!"],function () {                                                        console.log("$$ run");//!!!IT'S FOR TESTING!!!
-            args();
-        });
-    } else if(typeof(args)==="string"){
-        if(this.dijit&&this.dijit.registry){
-            return new $$Functions({id:args,instance:dijit.registry.byId(args)});
+function $$(args){                                                                                          //console.log("$$",args,this);
+    //if(typeof(args)==="function"){
+    //} else
+    if(typeof(args)==="string"&&args.trim().indexOf("#")==0){
+        var i=null;
+        if(window.dijit&&window.dijit.registry){
+            i=window.dijit.registry.byId(args.replace("#",""));
         }else{
             console.error("dijit/registry NOT INITIALIZED!!!"); return;
+        }
+        if(i){
+            var f$=new $$Functions({id:args,instance:i}); return f$;
+        }
+        var domNode=this.domNode;
+        if(!domNode)domNode=document.body;
+        var els=domNode.getElementsByTagName("*");
+        for(var ind=0;ind<els.length;ind++){
+            var el=els[ind];
+            if("#"+el.id==args)return el;
         }
     } else if(typeof(args)==="object"&&args.length>0/*array*/){
         var ao=[];
@@ -38,12 +40,28 @@ $$= function(args){                                                             
         }
         return new $$Functions(ao);
     }
+}
+$$.startupPage= function(pageTagID,pageScript){
+    var body=document.body;
+    if(body) body.style.display="none";
+    require(["dojo/ready"],function(ready){
+        ready(function(){                                                                                   console.log("$$ startupPage dojo/ready pageTagID=",pageTagID);//!!!IT'S FOR TESTING!!!
+            var initParams={id:(pageTagID)?pageTagID.toString().replace("#",""):pageTagID};
+            var page=new global.Page(initParams,initParams.id);
+            if(body) body.style.display="";
+            page.startup();
+            if(!pageScript)return;
+            page.$=$$;
+            page.script=pageScript;
+            page.script(page);
+        });
+    });
 };
 /**
  * opts = <o> | [<o1>,<o2>, ... ]
  *      <o> - { id:<id of instance of dojo or dijit>, instance:<instance of dojo or dijit> }
 */
-function $$Functions(objs){                                                                      //console.log("$$Functions ",params);
+function $$Functions(objs){                                                                                 //console.log("$$Functions ",params);
     var global=window;
     this.o=objs;
     this.instance=function(){
@@ -75,23 +93,14 @@ function $$Functions(objs){                                                     
         }
     };
     /**
-     * return $$Functions = <this>
-     */
-    this.pageInit=function(initParams){
-        this.action(function(o){
-            initParams.id=o.id;
-            o.instance=new global.Page(initParams,initParams.id); o.instance.startup();
-        });
-        return this;
-    };
-    /**
      * create new Class(params)
      * return new $$Functions({id:params.id,instance:<new of Class(params)>})
      */
     this.addNew= function(Class, params){
         if (!params) params={};
         var newInstance=new Class(params);
-        return new $$Functions({id:newInstance.id,instance:newInstance});
+        newInstance.$=new $$Functions({id:newInstance.id,instance:newInstance});
+        return newInstance.$;
     };
     /**
      * add child = new Class(params) to o.instance
@@ -101,7 +110,7 @@ function $$Functions(objs){                                                     
         if(!o||!o.instance) return;
         if (!params) params={};
         var childF= this.addNew(Class, params);
-        o.instance.addChild(childF.instance());                               //console.log("addChild=",params,childInstance);
+        o.instance.addChild(childF.instance());                                                             //console.log("addChild=",params,childF);
         return childF;
     };
     /**
@@ -123,12 +132,12 @@ function $$Functions(objs){                                                     
                 newMenuFinstance.set("popup",newPopupMenuF.instance());
                 o.instance.addChild(newMenuFinstance);
                 newMenuF.setHandlers(params);
-                if(addCallback)addCallback(newPopupMenuF);
+                if(addCallback)addCallback(newPopupMenuF.instance());
                 return;
             }
             var childFunctions= self.addChildTo(o,menuClass,params);
             childFunctions.setHandlers(params);
-            if(addCallback)addCallback(childFunctions);
+            if(addCallback)addCallback(childFunctions.instance());
 
         });
         return this;
@@ -136,18 +145,19 @@ function $$Functions(objs){                                                     
     /**
      * return $$Functions = <this>
      */
-    this.addInnerPage=function(params){
-        var addChildTo=this.addChildTo;
+    this.addInnerPage=function(params,callback){
+        var self=this, innerPagesF=[];
         this.action(function(o){
-            addChildTo(o, global.InnerPage,params);
+            innerPagesF.push(self.addChildTo(o, global.InnerPage,params));
         });
+        if(callback)callback(innerPagesF);
         return this;
     };
     /**
      * set prop of <this>.o instance
      * return $$Functions = <this>
      */
-    this.set=function(param,value){                                console.log("param=",param," value=",value);
+    this.set=function(param,value){                                                                         console.log("param=",param," value=",value);
         this.action(function(o){
             o.instance.set(param,value);
         });
@@ -159,7 +169,7 @@ function $$Functions(objs){                                                     
             var instance;
             if(!(instance=of.instance())) return;
             instance.set(actionName,function(e){
-                actionHandler(of,e);
+                actionHandler(instance,e);
             })
         });
     };
@@ -199,6 +209,16 @@ function $$Functions(objs){                                                     
     this.style=function(name,value){
         this.action(function(o){
             o.instance.domNode.style[name]=value;
+        });
+        return this;
+    };
+    /**
+     * set style of <this>.o domNode
+     * return $$Functions = <this>
+     */
+    this.show=function(value){
+        this.action(function(o){
+            if(value!=false)o.instance.domNode.style["display"]="";else o.instance.domNode.style["display"]="none";
         });
         return this;
     };
