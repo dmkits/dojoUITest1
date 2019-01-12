@@ -46,23 +46,23 @@
     </tr>
 </table>
 </body>
-<script type="text/javascript">
-    var loadConfig=function (){
-        $$("#dbHost").$.val("127.0.0.1:8080");
-        $$("#dbName").$.val("GMSSample38");
-        $$("#dbUser").$.val("sa");
-        $$("#dbPassword").$.val("********");
-        $$("#configName").$.val("debugDev");
+<script type="text/javascript">                                                                             console.log("startupConfig",this,$$);
+    $$.loadConfig=function (){                                                                              console.log("this.dbHost",this);
+        $$.dbHost.$.val("127.0.0.1:8080");
+        $$.dbName.$.val("GMSSample38");
+        $$.dbUser.$.val("sa");
+        $$.dbPassword.$.val("********");
+        $$.configName.$.val("debugDev");
 
-        $$("#dbList").innerHTML="GMSData38<br>GMSSample38<br>GMSDev38_1<br>GMSText38_1";
+        $$.dbList.innerHTML="GMSData38<br>GMSSample38<br>GMSDev38_1<br>GMSText38_1";
     };
-    loadConfig();
-    $$("#sa_startupConfig_btnLoadConfig").$.click(function(){
-        $$("#sa_startupConfig_configState").innerHTML="default. reloaded.";
-        loadConfig();
+    $$.loadConfig();
+    $$.sa_startupConfig_btnLoadConfig.$.click(function(){
+        $$.sa_startupConfig_configState.innerHTML="default. reloaded.";
+        $$.loadConfig();
     });
-    $$("#sa_startupConfig_btnSaveConfigAndReconnect").$.click(function(){
-        $$("#sa_startupConfig_configState").innerHTML="default. stored.reconnected.";
-        loadConfig();
+    $$.sa_startupConfig_btnSaveConfigAndReconnect.$.click(function(){
+        $$.sa_startupConfig_configState.innerHTML="default. stored.reconnected.";
+        $$.loadConfig();
     });
 </script>

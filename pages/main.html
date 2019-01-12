@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="/css/main.css" media="screen">
     <!--<link rel="stylesheet" type="text/css" href="/css/contentController.css" media="screen">-->
     <!--<script type="text/javascript" src="/jslib/jsBarcode/JsBarcode.ean-upc.min.js"></script>-->
-</head>
+    <script type="text/javascript" src="/jslib/app.js"></script></head>
 <body class="claro">
 <page id="main_Page" design="headline">
     <BorderContainer id="main_PageTop" region="top" design="sidebar" class="mainTopContent" gutters="true">
@@ -47,10 +47,9 @@
     </BorderContainer>
     <TabContainer id="main_Tabs" region="center" tabPosition="top" class="mainContent"></TabContainer>
 </page>
-<script type="text/javascript" src="/jslib/app.js"></script>
 <script type="text/javascript">
-    $$.startupPage("#main_Page",function(){                                                                 console.log("START MAIN PAGE...");//!!!IT'S FOR TESTING!!!
-        var mainTabs=$$("#main_Tabs");                                                                      console.log("mainTabs=",mainTabs);
+    $$.startupPage("#main_Page",function(){                                                                 console.log("START MAIN PAGE...",$$);//!!!IT'S FOR TESTING!!!
+        var mainTabs=$$.main_Tabs;                                                                          console.log("mainTabs=",mainTabs);
         // var mainMenu=[
         //     { "menuItemName":"menuBarItemRec", "menuTitle":"Приход товара", "pageTitle":"Приход товара", "module":"rec", "closable":false },
         //     { "menuItemName":"menuBarItemReportsProds", "menuTitle":"Товарные отчеты", "pageTitle":"Товарные отчеты", "closable":false,
@@ -64,20 +63,20 @@
         //     { "menuItemName":"menuBarItemHelpAbout", "menuTitle":"О программе", "action":"help_about" },
         //     { "menuItemName":"menuBarItemClose", "menuTitle":"Выход", "action":"close" }
         // ];
-        var createMainMenu = function(mainMenuData){
-            var mainMenu=$$("#main_MainMenu");
+        $$.createMainMenu = function(mainMenuData){
+            var mainMenu=$$.main_MainMenu;
             var menuClickAddInnerPage=function(menuItem,e){                                                 console.log(menuItem.id+" "+menuItem.label+" click",menuItem,e);
                 var iPageName="innerPage_"+menuItem.id, iPageInstance=mainTabs[iPageName];
                 if(!iPageInstance){
 
                     mainTabs.$.addInnerPage({region:"center", title:iPageName, closable:true, style:"margin:0;padding:0;"},
-                            function(innerPagesF){
-                                iPageInstance=mainTabs[iPageName]=innerPagesF[0].instance();
+                            function(innerPage){
+                                iPageInstance=mainTabs[iPageName]=innerPage;
                             });
                 }
                 mainTabs.selectChild(iPageInstance);
 
-                mainTabs.$.c();
+//                mainTabs.$.c();
 
             };
             for(var i in mainMenuData) {
@@ -110,15 +109,12 @@
         // },1000);
                                                                                                             //console.log("$$.request",$$.request);
         $$.request.getJSONData({url:"/getMainData"},function(result){                                       console.log("getJSONData /getMainData",result);
-            if(result)createMainMenu(result.mainMenu);
+            if(result)$$.createMainMenu(result.mainMenu);
         });
 
 //        $$("#main_Page").$.addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
-         $$("#main_Tabs").addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
+        mainTabs.$.addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
     });
-
-//    $$("123");
-//    $$("123","234");
 </script>
 </body>
 </html>

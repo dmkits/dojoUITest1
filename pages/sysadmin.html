@@ -21,7 +21,7 @@
         <ContentPane id="sysadmin_TopStateInfo" region="top" class="sysadmin_TopContent">
             <!--<div id="sysadmin_app_user" style="display:inline;"></div>-->
             <div id="sysadmin_app_mode" style="display:inline;margin-left:20px;"></div>
-            <div id="sysadmin_ConnUserName" style="display:inline;;margin-left:20px;"></div>
+            <div id="sysadmin_ConnUserName" style="display:inline;;margin-left:20px;">1</div>
             <div id="sysadmin_app_port" style="display:inline; margin-left:20px;"></div>
             <div id="sysadmin_dbName" style="display:inline;;margin-left:20px;"></div>
             <div id="sysadmin_db_sysadmin_name" style="display:inline;;margin-left:20px;"></div>
@@ -35,18 +35,6 @@
             <ToggleButton id="sysadmin_btn1" iconClass="dijitCheckBoxIcon">ToggleButton1</ToggleButton>
 
             <Button id="sysadmin_btnLogout" style="position:absolute;right:5px;">Logout</Button>
-            <!--<table>-->
-                <!--<tr>-->
-                    <!--<td><ToggleButton id="sysadmin_btnStartupConfig" iconClass="dijitCheckBoxIcon">Startup configuration</ToggleButton></td>-->
-                    <!--<td><ToggleButton id="sysadmin_btnDatabase" iconClass="dijitCheckBoxIcon">Database</ToggleButton></td>-->
-                    <!--&lt;!&ndash;<td><ToggleButton id="sysadmin_btnAppModelSettings" iconClass="dijitCheckBoxIcon">AppModelSettings</ToggleButton></td>&ndash;&gt;-->
-                    <!--&lt;!&ndash;<td><ToggleButton id="sysadmin_btnSynchronization" iconClass="dijitCheckBoxIcon">Synchronization</ToggleButton></td>&ndash;&gt;-->
-                    <!--<td><ToggleButton id="sysadmin_btnLogins" iconClass="dijitCheckBoxIcon">Logins</ToggleButton></td>-->
-                    <!--<td><ToggleButton id="sysadmin_btnLogs" iconClass="dijitCheckBoxIcon" ToggleGroup="1">Logs</ToggleButton></td>-->
-                    <!--<td width="500px"></td>-->
-                    <!--<td><ToggleButton id="btnLogout" iconClass="dijitCheckBoxIcon">Logout</ToggleButton></td>-->
-                <!--</tr>-->
-            <!--</table>-->
         </ContentPane>
     </BorderContainer>
     <StackContainer id="sysadmin_ContentContainer" region="center" tabPosition="top" class="sysadmin_Content" childIconClass="dijitCheckBoxIcon">
@@ -63,14 +51,13 @@
 </page>
 </body>
 <script type="text/javascript">
-    $$.startupPage("#sysadmin_Page",function() {                                                            console.log("START SYSADMIN PAGE...",this);//!!!IT'S FOR TESTING!!!
-        this.page.sysadmin_btnLogout.onClick=function(){                                                    console.log("sysadmin_btnLogout onClick");
+    $$.startupPage("#sysadmin_Page",function() {                                                            console.log("START SYSADMIN PAGE...",this,$$);//!!!IT'S FOR TESTING!!!
+        $$.sysadmin_btnLogout.onClick=function(){                                                           console.log("sysadmin_btnLogout onClick");
             window.location.replace(window.location.href);
 
         };
 
-        this.$("#sysadmin_app_mode").innerText="APP MODE";                                                  console.log("sysadmin_app_mode",this.$("#sysadmin_app_mode"));
-
+        $$.sysadmin_app_mode.innerText="APP MODE";                                                          console.log("sysadmin_app_mode",$$.sysadmin_app_mode);
     });
 </script>
 </html>

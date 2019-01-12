@@ -3,9 +3,9 @@ define(["dojo/_base/declare","dijit/layout/BorderContainer","app/tagParser","app
             return declare("Page",BorderContainer,{
                 constructor: function(args){
                     this.parseOnLoad=false;
+                    this.$page={};
                     var domNode=document.getElementById(args.id);
-                    if(!domNode)return;
-                    tagParser.parseNodeAttributes(args,domNode,["design"]);
+                    if(domNode)tagParser.parseNodeAttributes(args,domNode,["design"]);
                     declare.safeMixin(this,args);
                 },
                 postCreate :function(){
@@ -22,8 +22,8 @@ define(["dojo/_base/declare","dijit/layout/BorderContainer","app/tagParser","app
                         return d;
                     };
                     tagParser.parseCFunctions.push(createInnerPageTags);
-                    this.page={};this.page[this.id]=this;
-                    tagParser.parseThis(this.containerNode,this.page);
+                    this.$page[this.id]=this;
+                    tagParser.parseThis(this.containerNode,this.$page);
                 }
             });
         });
