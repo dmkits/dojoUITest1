@@ -10,7 +10,7 @@ define([],function(){
                 for(var i=0;i<scripts.length;i++){
                     if(scripttext.length>0)scripttext+="\n";
                     scripttext =
-                        "require(['dijit/registry'],function(registry){ var $$=registry.byId('"+containerNode.id+"').$innerPage;"+
+                        "require(['dijit/registry','dojo/domReady!'],function(registry){ var $$=registry.byId('"+containerNode.id+"').$innerPage;"+
                         " $$.startup_"+i+"= function(){"+
                         scripts[i]+
                         "\n};$$.startup_"+i+"(); });";

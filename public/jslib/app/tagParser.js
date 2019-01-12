@@ -41,7 +41,7 @@ define(["app/tagParserCF",
                 }
                 return d;
             },
-            createContainerTags: function(node){
+            createContainerTags: function(node,startupList){
                 var tagClass=null;
                 if(node.tagName=="BORDERCONTAINER"){
                     tagClass=BorderContainer;
@@ -63,6 +63,9 @@ define(["app/tagParserCF",
                     {"childIconClass":"iconClass"});
                 var d=new tagClass(params,node);                                                            //console.log('tagParser.createContainerTags: d=',d);
                 d.domNode.setAttribute("tagName",node.tagName);
+                //if(node.tagName=="BORDERCONTAINER"||node.tagName=="LAYOUTCONTAINER"
+                //    ||node.tagName=="TABCONTAINER"||node.tagName=="STACKCONTAINER") d.startup();
+                if(d.startup) startupList.push(d);
                 return d;
             },
             createMenuTags: function(node){
@@ -105,13 +108,15 @@ define(["app/tagParserCF",
                     if(!$page.$cItems)$page.$cItems={};
                     if(!$page.$nItems)$page.$nItems={};
                 }
-                this.parseContainer(0,containerNode,$page);
+                var startupList=[];
+                this.parseContainer(0,containerNode,$page, startupList);
+                if(startupList.length>0)startupList[0].startup();                                           //console.log("startupList",startupList);
             },
-            parseContainer: function(ind,containerNode,$page) {
+            parseContainer: function(ind,containerNode,$page, startupList) {
                 var containerChild=containerNode.children[ind];
                 if(!containerChild)return;                                                                  //console.log('tagParser.parseContainer: containerChild=', containerChild);
                 var newNode=this.createBaseTags(containerChild);
-                if(!newNode)newNode=this.createContainerTags(containerChild);
+                if(!newNode)newNode=this.createContainerTags(containerChild, startupList);
                 if(!newNode)newNode=this.createMenuTags(containerChild);
                 if(!newNode&&this.parseCFunctions)
                     for (var fInd in this.parseCFunctions) {
@@ -127,9 +132,9 @@ define(["app/tagParserCF",
                 }else if(containerChild.id&&$page){
                     $page[containerChild.id]=containerChild;$page.$nItems[containerChild.id]=containerChild;
                 }
-                if(containerChild.children.length>0) this.parseContainer(0,containerChild,$page);
+                if(containerChild.children.length>0) this.parseContainer(0,containerChild,$page,startupList);
                 if(newNode&&newNode.labelTag) ind++;
-                this.parseContainer(ind+1,containerNode,$page);
+                this.parseContainer(ind+1,containerNode,$page,startupList);
             }
         };
     });

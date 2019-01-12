@@ -3,12 +3,17 @@ define(["dojo/_base/declare","dijit/layout/ContentPane","app/tagParser","app/scr
             return declare("InnerPage",ContentPane,{
                 constructor: function(args){
                     this.parseOnLoad=false;
-                    this.$innerPage={};
+                    this.$innerPage={$parent:this};
                     declare.safeMixin(this,args);
                 },
                 onLoad :function(){                                                                         console.log('InnerPage.onLoad',this.containerNode);
                     tagParser.parseThis(this.containerNode,this.$innerPage);
+                    this.startup();
+                    this._layout();
                     scriptsParser.parseScripts(this.containerNode);
+                },
+                postCreate :function(){
+
                 }
             });
         });

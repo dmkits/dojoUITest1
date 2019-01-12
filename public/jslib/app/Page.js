@@ -3,7 +3,7 @@ define(["dojo/_base/declare","dijit/layout/BorderContainer","app/tagParser","app
             return declare("Page",BorderContainer,{
                 constructor: function(args){
                     this.parseOnLoad=false;
-                    this.$page={};
+                    this.$page={$parent:this};
                     var domNode=document.getElementById(args.id);
                     if(domNode)tagParser.parseNodeAttributes(args,domNode,["design"]);
                     declare.safeMixin(this,args);

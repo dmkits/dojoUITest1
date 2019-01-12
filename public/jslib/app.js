@@ -50,7 +50,6 @@ $$.startupPage= function(pageTagID,pageScript){
             if(body) body.style.display="";
             page.startup();
             if(!pageScript)return;
-            page.$page.$parent=page;
             page.$page.startup=pageScript;
             var dialogs=global.$$.dialogs,request=global.$$.request
             $$=page.$page;

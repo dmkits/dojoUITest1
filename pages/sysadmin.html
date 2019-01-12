@@ -37,14 +37,14 @@
             <Button id="sysadmin_btnLogout" style="position:absolute;right:5px;">Logout</Button>
         </ContentPane>
     </BorderContainer>
-    <StackContainer id="sysadmin_ContentContainer" region="center" tabPosition="top" class="sysadmin_Content" childIconClass="dijitCheckBoxIcon">
+    <StackContainer id="sysadmin_ContentContainer" region="center" tabPosition="top" childIconClass="dijitCheckBoxIcon">
         <InnerPage title="Startup config" iconClass="dijitCheckBoxIcon" href="/sysadmin/startupConfig">
             <div>123</div>
         </InnerPage>
         <ContentPane title="Logs" iconClass="dijitCheckBoxIcon">
             <div>123456</div>
         </ContentPane>
-        <InnerPage title="Database" iconClass="dijitCheckBoxIcon" href="/sysadmin/Database">
+        <InnerPage id="sysadmin_ipDatabase" title="Database" iconClass="dijitCheckBoxIcon" href="/sysadmin/Database">
             <div>1234565789</div>
         </InnerPage>
     </StackContainer>
@@ -58,6 +58,8 @@
         };
 
         $$.sysadmin_app_mode.innerText="APP MODE";                                                          console.log("sysadmin_app_mode",$$.sysadmin_app_mode);
+
+        $$.sysadmin_ContentContainer.selectChild($$.sysadmin_ipDatabase);
     });
 </script>
 </html>
