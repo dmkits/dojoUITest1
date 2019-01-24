@@ -37,17 +37,6 @@ define(["dojo/request", "app/base","app/dialogs"],
                         if(callback)callback(false, resperror);
                     })
             },
-            doRequestFailDialog: function(params) {
-                if(!params) params={};
-                params.dialogID="requestFailDialog";
-                params.width=350;
-                params.btnOkLabel="Закрыть";
-                var instance= base.getInstanceByID(params.dialogID);
-                if(instance&&instance.open){
-                    return;
-                }
-                dialogs.showSimple(params);
-            },
             /** getJSONData
              * params = { url, condition, timeout, showRequestErrorDialog, consoleLog, resultItemName }
              * default: params.showRequestErrorDialog = true, params.consoleLog = true
@@ -100,10 +89,11 @@ define(["dojo/request", "app/base","app/dialogs"],
 
             /** postData
              * params = { url, condition, data, headers, handleAs, timeout, consoleLog }
-             * if success : callback(true,data), if not success callback(false,error)
+             * if success : callback(data),
+             * if not success callback(undefined,error)
              */
-            postData: function (params,callback) {
-                if (!params) return;
+            postData: function (params,callback){
+                if(!params)return;
                 var url= params["url"],condition=params["condition"],consoleLog=params["consoleLog"];
                 if(condition && typeof(condition)==="object"){
                     var scondition;
@@ -118,18 +108,19 @@ define(["dojo/request", "app/base","app/dialogs"],
                 if(params.headers) requestParams.headers=params.headers;
                 if(params.timeout) requestParams.timeout=params.timeout;
                 request.post(url, requestParams).then(
-                    function(respdata){
-                        if(callback)callback(true, respdata);
-                    }, function(resperror){
-                        if(consoleLog) console.log("Request postData ERROR! url=",url," error=",resperror);
-                        if(callback)callback(false, resperror);
+                    function(respData){
+                        if(callback)callback(respData);
+                    }, function(reqErr){
+                        if(consoleLog) console.error("Request postData ERROR! url=",url," error=",reqErr);
+                        if(callback)callback(undefined,reqErr);
                     })
             },
             /** postJSON
              * params = { url, condition, data, timeout, consoleLog, showRequestErrorDialog }
-             * if success : callback(true,data), if not success callback(false,error)
+             * if success : callback(jsonData),
+             * if not success callback(undefined,error)
              */
-            postJSON: function (params,callback) {
+            postJSON: function (params,callback){
                 if (!params) return;
                 params.handleAs="json"; params.headers=this.jsonHeader;
                 this.postData(params,callback);
@@ -137,50 +128,66 @@ define(["dojo/request", "app/base","app/dialogs"],
             /** postJSONData
              * params = { url, condition, timeout, showRequestErrorDialog, data, resultItemName }
              * default: params.showRequestErrorDialog = true
-             * resultCallback = function(result, error)
-             *  result = undefined if request failed
-             *  result = null if result is empty or result error (parameter error exists)
-             *  result = response result if no params.resultItemName
-             *  OR result = response result[params.resultItemName] if exists params.resultItemName
+             * resultCallback = function(result, error), error = { reqError/srvError, message, errorMsg,userErrorMsg }
+             *      result = response result if request success and has result and no params.resultItemName,
+             *          error.srvError contained server error, message contained userErrorMsg/errorMsg from server if post request returned error
+             *      OR result = result[params.resultItemName] if request success and has result and exists params.resultItemName,
+             *          error.srvError contained server error, message contained userErrorMsg/errorMsg from server if post request returned error
+             *      result = response result if request success and no response result
+             *  result = undefined if request failed, error.reqError,error.message present
              */
-            postJSONData: function (params,resultCallback) {
+            postJSONData: function (params,resultCallback){
                 if (!params) return;
                 var requestFailDialog, self=this;
-                if (params.showRequestErrorDialog!==false)
+                if(params.showRequestErrorDialog!==false)
                     requestFailDialog= function(msg, reason){
                         if(!reason) reason="";
                         self.doRequestFailDialog({title:"Внимание",content:msg+" <br>Причина:"+reason});
                     };
-                this.postJSON(params,function(success, serverResult) {
-                    if (!success) {
-                        if (requestFailDialog) requestFailDialog("Невозможно получить результат операции!","Нет связи с сервером!");
-                        resultCallback();
+                this.postJSON(params,function(respJSON,error){
+                    if(!error&&respJSON&&!respJSON.error&&!params.resultItemName){
+                        resultCallback(respJSON);
                         return;
-                    }
-                    if (!serverResult) {
+                    }else if(!error&&respJSON&&!respJSON.error&&params.resultItemName){
+                        var postRes=respJSON[params.resultItemName];
+                        if((postRes===undefined||postRes===null)&&requestFailDialog)
+                            requestFailDialog("Невозможно получить результат операции!","Нет данных результата операции с сервера!");
+                        resultCallback(postRes);
+                        return;
+                    }else if(!error&&respJSON&&respJSON.error){
+                        var postRes=(!params.resultItemName)?respJSON:respJSON[params.resultItemName],
+                            postErr={srvError:respJSON.error}, dlgMsg=respJSON.error;
+                        if(respJSON.errorMsg) {
+                            dlgMsg=respJSON.errorMsg + "<br>" + dlgMsg;
+                            postErr.message=respJSON.errorMsg;postErr.errorMsg=respJSON.errorMsg;
+                        }
+                        if(respJSON.userErrorMsg){
+                            dlgMsg=respJSON.userErrorMsg;
+                            postErr.message=respJSON.userErrorMsg;postErr.userErrorMsg=respJSON.userErrorMsg;
+                        }
+                        if(requestFailDialog) requestFailDialog("Невозможно выпонить операцию!",dlgMsg);
+                        resultCallback(postRes,postErr);
+                        return;
+                    }else if(!error&&!respJSON){
                         if (requestFailDialog) requestFailDialog("Невозможно получить результат операции!","Нет данных с сервера!");
                         resultCallback(null);
                         return;
                     }
-                    if (serverResult.error) {
-                        var msg = serverResult.error;
-                        if (serverResult.errorMsg) msg = serverResult.errorMsg + "<br>" + msg;
-                        if(serverResult.userErrorMsg)msg=serverResult.userErrorMsg;
-                        if (requestFailDialog) requestFailDialog("Невозможно выпонить операцию!",msg);
-                        resultCallback((params.resultItemName)?serverResult[params.resultItemName]:serverResult, serverResult.error);
-                        return;
-                    }
-                    if (params.resultItemName && serverResult[params.resultItemName] === undefined) {
-                        if (requestFailDialog) requestFailDialog("Невозможно получить результат операции!","Нет данных результата операции с сервера!");
-                        resultCallback(null);
-                        return;
-                    }
-                    if (params.resultItemName) {
-                        resultCallback(serverResult[params.resultItemName]);
-                        return;
-                    }
-                    resultCallback(serverResult);
+                    //if error
+                    var msg = (error.response&&error.response.status==404)?"Некорретный ответ сервера!":"Нет связи с сервером!",
+                        postErr=(error.message)?error.message:error;
+                    if(requestFailDialog) requestFailDialog("Невозможно получить результат операции!",msg);
+                    resultCallback(undefined,{reqError:postErr,message:msg});
                 })
+            },
+            doRequestFailDialog: function(params){
+                if(!params) params={};
+                params.dialogID="requestFailDialog";
+                params.width=350;
+                params.btnOkLabel="Закрыть";
+                var instance= base.getInstanceByID(params.dialogID);
+                if(instance&&instance.open)return;
+                dialogs.showSimple(params);
             }
         };
     });

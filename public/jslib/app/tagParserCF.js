@@ -35,7 +35,7 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
                 return child;
             };
             this.addInnerPage=function(params,callback){
-                var innerPage=this.addChildTo($c, global.InnerPage,params);
+                var innerPage=this.addChildTo($c, window.InnerPage,params);
                 if(callback)callback(innerPage);
                 return $c;
             };
@@ -54,12 +54,12 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
                 return $c;
             };
             this.addMenu=function(menuClassName,params,addCallback){
-                var menuClass=global.dijit[menuClassName];
+                var menuClass=window.dijit[menuClassName];
                 if(!menuClass){
                     console.error("CALL addMenu: dijit/"+menuClassName+" NOT INITIALIZED!!!"); return $c;
                 }
                 if(menuClassName=="PopupMenuBarItem"){
-                    var popupMenuClass=global.dijit["Menu"];
+                    var popupMenuClass=window.dijit["Menu"];
                     if(!popupMenuClass){
                         console.error("CALL addMenu: dijit/"+popupMenuClass+" NOT INITIALIZED!!!"); return $c;
                     }

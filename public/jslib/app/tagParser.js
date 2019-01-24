@@ -14,13 +14,13 @@ define(["app/tagParserCF",
              */
             createBaseTags: function(node){                                                                 //console.log('tagParser.createBaseTags: node=',node);
                 var tagClass=null;
-                if(node.tagName=="TEXTBOX"){
+                if(node.tagName=="TextBox".toUpperCase()){
                     tagClass=TextBox;
-                }else if(node.tagName=="DATETEXTBOX"){
+                }else if(node.tagName=="DateTextBox".toUpperCase()){
                     tagClass=DateTextBox;
-                }else if(node.tagName=="BUTTON"){
+                }else if(node.tagName=="Button".toUpperCase()){
                     tagClass=Button;
-                }else if(node.tagName=="TOGGLEBUTTON"){
+                }else if(node.tagName=="ToggleButton".toUpperCase()){
                     tagClass=ToggleButton;
                 }
                 if(!tagClass)return;
@@ -43,17 +43,17 @@ define(["app/tagParserCF",
             },
             createContainerTags: function(node,startupList){
                 var tagClass=null;
-                if(node.tagName=="BORDERCONTAINER"){
+                if(node.tagName=="BorderContainer".toUpperCase()){
                     tagClass=BorderContainer;
-                }else if(node.tagName=="LAYOUTCONTAINER"){
+                }else if(node.tagName=="LayoutContainer".toUpperCase()){
                     tagClass=LayoutContainer;
-                }else if(node.tagName=="CONTENTPANE"){
+                }else if(node.tagName=="ContentPane".toUpperCase()){
                     tagClass=ContentPane;
-                }else if(node.tagName=="TABCONTAINER"){
+                }else if(node.tagName=="TabContainer".toUpperCase()){
                     tagClass=TabContainer;
-                }else if(node.tagName=="STACKCONTAINER"){
+                }else if(node.tagName=="StackContainer".toUpperCase()){
                     tagClass=StackContainer;
-                }else if(node.tagName=="STACKCONTROLLER"){
+                }else if(node.tagName=="StackController".toUpperCase()){
                     tagClass=StackController;
                 }
                 if(!tagClass)return;
@@ -63,26 +63,55 @@ define(["app/tagParserCF",
                     {"childIconClass":"iconClass"});
                 var d=new tagClass(params,node);                                                            //console.log('tagParser.createContainerTags: d=',d);
                 d.domNode.setAttribute("tagName",node.tagName);
-                //if(node.tagName=="BORDERCONTAINER"||node.tagName=="LAYOUTCONTAINER"
-                //    ||node.tagName=="TABCONTAINER"||node.tagName=="STACKCONTAINER") d.startup();
                 if(d.startup) startupList.push(d);
                 return d;
             },
             createMenuTags: function(node){
                 var tagClass=null;
-                if(node.tagName=="MENUBAR"){
+                if(node.tagName=="MenuBar".toUpperCase()){
                     tagClass=MenuBar;
-                }else if(node.tagName=="MENUBARITEM"){
+                }else if(node.tagName=="MenuBarItem".toUpperCase()){
                     tagClass=MenuBarItem;
-                }else if(node.tagName=="POPUPMENUBARITEM"){
+                }else if(node.tagName=="PopupMenuBarItem".toUpperCase()){
                     tagClass=PopupMenuBarItem;
-                }else if(node.tagName=="MENU"){
+                }else if(node.tagName=="Menu".toUpperCase()){
                     tagClass=Menu;
                 }
                 if(!tagClass)return;
                 var params={tagName:node.tagName};
-                this.parseNodeAttributes(params,node,["class","style","region","tabPosition"]);//
+                this.parseNodeAttributes(params,node,["class","style","region"]);//
                 var d=new tagClass(params,node);
+                d.domNode.setAttribute("tagName",node.tagName);
+                return d;
+            },
+            createHTableTags: function(node){
+                var tagClass=null;
+                if(node.tagName=="HTableSimple".toUpperCase()){
+                    tagClass=window.HTableSimple;
+                    if(!tagClass)console.error("Module for tag "+node.tagName+" cannot loaded!");
+                }else if(node.tagName=="HTableSimpleFiltered".toUpperCase()){
+                    tagClass=window.HTableSimpleFiltered;
+                    if(!tagClass)console.error("Module for tag "+node.tagName+" cannot loaded!");
+                }
+                if(!tagClass)return;
+                var params={tagName:node.tagName};
+                this.parseNodeAttributes(params,node,
+                    ["class","style","region","design","gutters","title","iconClass"]);
+                var d=new tagClass(params,node);                                                            //console.log('tagParser.createHTableTags: d=',d);
+                d.domNode.setAttribute("tagName",node.tagName);
+                return d;
+            },
+            createTDocTags: function(node){
+                var tagClass=null;
+                if(node.tagName=="TDocSimpleTable".toUpperCase()){
+                    tagClass=window.TDocSimpleTable;
+                    if(!tagClass)console.error("Module for tag "+node.tagName+" cannot loaded!");
+                }
+                if(!tagClass)return;
+                var params={tagName:node.tagName};
+                this.parseNodeAttributes(params,node,
+                    ["class","style","region","design","gutters","title","iconClass"]);
+                var d=new tagClass(params,node);                                                            //console.log('tagParser.createHTableTags: d=',d);
                 d.domNode.setAttribute("tagName",node.tagName);
                 return d;
             },
@@ -118,6 +147,8 @@ define(["app/tagParserCF",
                 var newNode=this.createBaseTags(containerChild);
                 if(!newNode)newNode=this.createContainerTags(containerChild, startupList);
                 if(!newNode)newNode=this.createMenuTags(containerChild);
+                if(!newNode)newNode=this.createHTableTags(containerChild);
+                if(!newNode)newNode=this.createTDocTags(containerChild);
                 if(!newNode&&this.parseCFunctions)
                     for (var fInd in this.parseCFunctions) {
                         var parseFunction=this.parseCFunctions[fInd];

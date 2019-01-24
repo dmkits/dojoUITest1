@@ -1,11 +1,11 @@
 var body=document.body;
 if(body) body.style.display="none";
-var global=window;                                                                                          console.log("app",this);//!!!IT'S FOR TESTING!!!
-require(["dijit/registry","app/Page","app/InnerPage","app/dialogs","app/request"],
-    function (registry,Page,InnerPage,dialogs,request){
-        global.$$.dialogs= dialogs;
-        global.$$.request= request;
-    });                                                                                                     console.log("global=window=",window);
+require(["dijit/registry","app/dialogs","app/request","app/Page","app/InnerPage",
+    "app/hTableSimple","app/hTableSimpleFiltered","app/tDocSimpleTable"],
+    function (registry,dialogs,request){
+        window.$$.dialogs= dialogs;
+        window.$$.request= request;
+    });                                                                                                     console.log("app window=",window);
 
 ///**
 // * args = function | "<id>" | ["<id1>","<id2>", ... ]
@@ -46,15 +46,12 @@ $$.startupPage= function(pageTagID,pageScript){
     require(["dojo/ready"],function(ready){
         ready(function(){                                                                                   console.log("$$ startupPage dojo/ready pageTagID=",pageTagID);//!!!IT'S FOR TESTING!!!
             var initParams={id:(pageTagID)?pageTagID.toString().replace("#",""):pageTagID};
-            var page=new global.Page(initParams,initParams.id);
+            var page=new window.Page(initParams,initParams.id);
             if(body) body.style.display="";
             page.startup();
             if(!pageScript)return;
             page.$page.startup=pageScript;
-            var dialogs=global.$$.dialogs,request=global.$$.request
             $$=page.$page;
-            $$.dialogs=dialogs;$$.$dialogs=dialogs;
-            $$.request=request;$$.$request=request;
             page.$page.startup(page);
         });
     });
