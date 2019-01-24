@@ -1,11 +1,11 @@
 define(["app/tagParserCF",
         "dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/layout/ContentPane",
-        "dijit/layout/TabContainer", "dijit/layout/StackContainer","dijit/layout/StackController",
+        "dijit/layout/TabContainer", "dijit/layout/StackContainer","dijit/layout/StackController", "dijit/TitlePane",
         "dijit/MenuBar", "dijit/MenuBarItem", "dijit/PopupMenuBarItem", "dijit/Menu", "dijit/MenuItem", "dijit/MenuSeparator",
         "dijit/form/Button","dijit/form/ToggleButton", "dijit/form/TextBox","dijit/form/DateTextBox"],
     function(TagParserComponentFunctions,
              BorderContainer,LayoutContainer,ContentPane,
-             TabContainer, StackContainer, StackController,
+             TabContainer, StackContainer, StackController, TitlePane,
              MenuBar, MenuBarItem, PopupMenuBarItem, Menu, MenuItem, MenuSeparator,
              Button,ToggleButton, TextBox, DateTextBox){
         return {
@@ -55,6 +55,8 @@ define(["app/tagParserCF",
                     tagClass=StackContainer;
                 }else if(node.tagName=="StackController".toUpperCase()){
                     tagClass=StackController;
+                }else if(node.tagName=="TitlePane".toUpperCase()){
+                    tagClass=TitlePane;
                 }
                 if(!tagClass)return;
                 var params={tagName:node.tagName};

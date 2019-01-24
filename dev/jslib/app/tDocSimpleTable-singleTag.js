@@ -2,7 +2,7 @@
  * Created by dmkits on 18.12.16.
  */
 define(["dojo/_base/declare", "app/base", "app/tDocBase","dijit/form/Select", "app/hTableSimpleFiltered","app/request"],
-    function(declare, base, DocumentBase,Select, HTable, Request) {
+    function(declare, Base, DocumentBase,Select, HTable, Request) {
         return declare("TDocSimpleTable", [DocumentBase], {
             /**
             * args: {titleText, dataURL, dataURLCondition={...},
@@ -24,51 +24,24 @@ define(["dojo/_base/declare", "app/base", "app/tDocBase","dijit/form/Select", "a
                 this.detailContentErrorMsg="Failed get data!";
                 this.srcNodeRef = document.getElementById(parentName);
                 declare.safeMixin(this,args);
-                if(args.rightPane&& typeof(args.rightPane)=="object"){
-                    this.rightContainerParams=args.rightPane;
-                    if(!this.rightContainerParams.style) this.rightContainerParams.style="margin:0;padding:0;";
-                    if(!this.rightContainerParams.width) this.rightContainerParams.width=150;
-                    this.rightContainerParams.style+= ";width:"+this.rightContainerParams.width.toString()+"px;";
+                if(args.rightPane&& typeof(args.rightPane)=="object") this.rightContainerParams=args.rightPane;
+            },
+            setParams: function(params){
+                if(!params)return this;
+                for (var pName in params) {
+                    var pValue=params[pName];
+                    if(pName=="titleText"&&this.topHeaderTitle)this.topHeaderTitle.innerHTML=pValue;
+                    if(pName=="rightPane")this.createRightContent(pValue);
+                    else this[pName]=pValue;
                 }
+                return this;
             },
-            postCreate: function(){                                                         console.log("TDocSimpleTable children",this.getChildren(),this.domNode);
-                console.log("TDocSimpleTable dom children",this.domNode.children);
-                //this.createTopContent();
-                //this.createContentTable(HTable);
-                //this.createRightContent();
-                this.parseDocPartsTags();
-            },
-
-            parseDocPartsTags:function(){
-                if(!this.domNode||!this.domNode.children)return;
-                for(var i=0;i<this.domNode.children.length;i++){
-                    var cNode=this.domNode.children[i];
-                    if(!cNode)continue;                                                         console.log("TDocSimpleTable cNode",cNode.widgetid);
-                    var cNodeAtrDocPart=cNode.getAttribute("docPart");
-                    if(cNodeAtrDocPart=="head") cNode.setAttribute("region","top");
-                    else if(cNodeAtrDocPart=="htable") cNode.setAttribute("region","center");
-                    else if(cNodeAtrDocPart=="total") cNode.setAttribute("region","bottom");
-
-                    cNode.style.marginLeft=cNode.style.marginLeft||"0";
-                    cNode.style.marginTop=cNode.style.marginTop||"0";
-                    cNode.style.marginBottom=cNode.style.marginBottom||"0";
-                    cNode.style.marginRight=cNode.style.marginRight||"0";
-                                                                                                //console.log("TDocSimpleTable cNode",cNode.style.border);
-                    cNode.style.paddingLeft=cNode.style.paddingLeft||"0";
-                    cNode.style.paddingTop=cNode.style.paddingTop||"0";
-                    cNode.style.paddingRight=cNode.style.paddingRight||"0";
-                    cNode.style.paddingBottom=cNode.style.paddingBottom||"0";
-                    if(cNodeAtrDocPart!=="htable")cNode.style.border=cNode.style.border||"none";
-
-                }
-            },
-
             createTopContent: function(){
                 this.topContent = this.setChildContentPaneTo(this, {region:'top', style:"margin:0;padding:0;border:none"});
                 var topTable = this.addTableTo(this.topContent.containerNode);
                 this.topTableRow = this.addRowToTable(topTable);
                 var topTableHeaderCell = this.addLeftCellToTableRow(this.topTableRow,1, "padding-bottom:5px;");
-                var topHeaderText = document.createElement("h1");
+                var topHeaderText = this.topHeaderTitle = document.createElement("h1");
                 topHeaderText.appendChild(document.createTextNode(this.titleText));
                 topTableHeaderCell.appendChild(topHeaderText);
                 var btnsTable = this.addTableTo(this.topContent.containerNode);
@@ -95,12 +68,20 @@ define(["dojo/_base/declare", "app/base", "app/tDocBase","dijit/form/Select", "a
                 };
             },
             createRightContent: function(params){
-                if(this.rightContainerParams){
-                    this.rightContainerParams.region='right';
-                    this.rightContainerParams.splitter=true;
-                    this.rightContainer= this.setContentPane(this.rightContainerParams);
-                    this.addChild(this.rightContainer);
-                }
+                if(!this.rightContainerParams&&params)this.rightContainerParams=params;
+                if(!this.rightContainerParams)return this;
+                if(!this.rightContainerParams.style) this.rightContainerParams.style="margin:0;padding:0;";
+                if(!this.rightContainerParams.width) this.rightContainerParams.width=150;
+                this.rightContainerParams.style+= ";width:"+this.rightContainerParams.width.toString()+"px;";
+                this.rightContainerParams.region='right';
+                this.rightContainerParams.splitter=true;
+                this.rightContainer= this.setContentPane(this.rightContainerParams);
+                this.addChild(this.rightContainer);
+            },
+            postCreate: function(){
+                this.createTopContent();
+                this.createContentTable(HTable);
+                this.createRightContent();
             },
             loadTableContent: function(additionalCondition){                                                //console.log("TemplateDocumentSimpleTable loadTableContent");
                 var condition = (this.dataURLCondition)?this.dataURLCondition:{};
@@ -169,9 +150,9 @@ define(["dojo/_base/declare", "app/base", "app/tDocBase","dijit/form/Select", "a
             addHeaderDateBox: function(labelText, params){
                 if(!params) params={};
                 var initValueDate=null;
-                if (params.initValueDate==="curMonthBDate") initValueDate= base.curMonthBDate();
-                else if (params.initValueDate==="curMonthEDate") initValueDate= base.curMonthEDate();
-                else initValueDate= base.today();
+                if (params.initValueDate==="curMonthBDate") initValueDate= Base.curMonthBDate();
+                else if (params.initValueDate==="curMonthEDate") initValueDate= Base.curMonthEDate();
+                else initValueDate= Base.today();
                 if (!params.width) params.width=105;
                 var dateBox= this.addTableCellDateBoxTo(this.topTableRow,
                     {labelText:labelText, labelStyle:"margin-left:5px;", cellWidth:params.width, cellStyle:"text-align:right;",
@@ -228,7 +209,7 @@ define(["dojo/_base/declare", "app/base", "app/tDocBase","dijit/form/Select", "a
                 if(!params.width)params.width=275;
                 var input=this.addTableInputTo(this.topTableRow,{labelText:label, labelStyle:"margin-left:5px; ",
                     cellWidth:params.width, cellStyle:"text-align:right;padding-left:10px;"});
-                var select= base.instanceFor(input, Select,{style:"width:180px;",
+                var select= Base.instanceFor(input, Select,{style:"width:180px;",
                     labelDataItem:params.labelDataItem,
                     loadDropDownURL:params.loadDropDownURL,contentTableCondition:params.contentTableCondition});
 
@@ -589,6 +570,7 @@ define(["dojo/_base/declare", "app/base", "app/tDocBase","dijit/form/Select", "a
 
                 this.loadTableContent();
                 this.layout();
+                this.startedUp=true;
                 return this;
             },
 
