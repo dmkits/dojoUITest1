@@ -1,7 +1,7 @@
 var startDateTime=new Date(), startTime=startDateTime.getTime();                                    console.log('STARTING at ',startDateTime );//test
 try{
     var ENV=process.env.NODE_ENV;                                                                   if(ENV=="development") console.log("START IN DEVELOPMENT MODE");
-    var common=require('./common'), appStartupParams = common.getStartupParams();                         console.log('Started with startup params:',appStartupParams);//test
+    var common=require('./common'), appStartupParams = common.getStartupParams();                   console.log('Started with startup params:',appStartupParams);//test
     var logDebug = (ENV=='development' || (appStartupParams && appStartupParams.logDebug));         if(logDebug) console.log("DEBUG LOG ON");
     module.exports.logDebug = logDebug;
     var path = require('path'), fs = require('fs'), dateformat =require('dateformat'),
@@ -12,7 +12,7 @@ try{
 
 module.exports.getAppStartupParams = function(){
     return appStartupParams;
-};                                                                                                  console.log('Started with startup params:',appStartupParams);//test
+};
 
 if (appStartupParams.logToConsole) {
     log.configure({

@@ -1,13 +1,13 @@
-define(["app/tagParserCF",
-        "dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/layout/ContentPane",
+define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/layout/ContentPane",
         "dijit/layout/TabContainer", "dijit/layout/StackContainer","dijit/layout/StackController", "dijit/TitlePane",
         "dijit/MenuBar", "dijit/MenuBarItem", "dijit/PopupMenuBarItem", "dijit/Menu", "dijit/MenuItem", "dijit/MenuSeparator",
-        "dijit/form/Button","dijit/form/ToggleButton", "dijit/form/TextBox","dijit/form/DateTextBox"],
-    function(TagParserComponentFunctions,
-             BorderContainer,LayoutContainer,ContentPane,
+        "dijit/form/Button","dijit/form/ToggleButton", "dijit/form/TextBox","dijit/form/DateTextBox",
+        "app/innerComponentFunctions"],
+    function(BorderContainer,LayoutContainer,ContentPane,
              TabContainer, StackContainer, StackController, TitlePane,
              MenuBar, MenuBarItem, PopupMenuBarItem, Menu, MenuItem, MenuSeparator,
-             Button,ToggleButton, TextBox, DateTextBox){
+             Button,ToggleButton, TextBox, DateTextBox,
+             InnerComponentFunctions){
         return {
             /**
              *
@@ -159,7 +159,7 @@ define(["app/tagParserCF",
                         if(newNode)break;
                     }
                 //if(newNode)/*IT'S FOR TEST*/                                                              console.log('tagParser.parseThis createBaseTags: newNode=',newNode);
-                if(newNode)newNode.$= new TagParserComponentFunctions(newNode);
+                if(newNode)newNode.$= new InnerComponentFunctions(newNode,$page);
                 if(newNode&&$page){
                     $page[newNode.id]=newNode;$page.$cItems[newNode.id]=newNode;
                 }else if(containerChild.id&&$page){

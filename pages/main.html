@@ -61,27 +61,29 @@
         $$.createMainMenu = function(mainMenuData){
             var mainMenu=$$.main_MainMenu;
             var menuClickAddInnerPage=function(menuItem,e){                                                 console.log(menuItem.id+" "+menuItem.label+" click",menuItem,e);
-                var iPageName="innerPage_"+menuItem.id, iPageInstance=mainTabs[iPageName];
+                var iPageName="innerPage_"+menuItem.id, iPageInstance=mainTabs.$.cid(iPageName);            console.log(menuItem.id+" "+menuItem.label+" click iPageInstance=",iPageInstance);
                 if(!iPageInstance){
-
-                    mainTabs.$.addInnerPage({region:"center", title:iPageName, closable:true, style:"margin:0;padding:0;"},
+                    mainTabs.$.addInnerPage({id:iPageName, title:menuItem.pageTitle, region:"center",style:"margin:0;padding:0;",
+                                closable:menuItem.closable, href:menuItem.pageHref
+                            },
                             function(innerPage){
                                 iPageInstance=mainTabs[iPageName]=innerPage;
                             });
                 }
-                mainTabs.selectChild(iPageInstance);
+                var ch=mainTabs.selectChild(iPageName);
             };
             for(var i in mainMenuData) {
                 var mainMenuDataItem=mainMenuData[i];
                 if (!mainMenuDataItem.popupMenu||mainMenuDataItem.popupMenu.length==0){                     //console.log("mainMenuDataItem",mainMenuDataItem);
                     mainMenu.$.addMenu("MenuBarItem", {id:mainMenuDataItem.menuItemName,label:mainMenuDataItem.menuTitle, itemData:mainMenuDataItem,
+                        pageTitle:mainMenuDataItem.pageTitle,closable:mainMenuDataItem.closable,pageHref:mainMenuDataItem.pageHref,
                         click:menuClickAddInnerPage
                     });
                     continue;
                 }
                 // make sub-menu
                 mainMenu.$.addMenu("PopupMenuBarItem", {id:mainMenuDataItem.menuItemName, label: mainMenuDataItem.menuTitle},
-                        function(menuBar){                                                                 console.log("menuBar=",menuBar);
+                        function(menuBar){                                                                 //console.log("menuBar=",menuBar);
                             for(var pi in mainMenuDataItem.popupMenu) {
                                 var popupMenuItem=mainMenuDataItem.popupMenu[pi];
                                 var popupMenuItemName = popupMenuItem.menuItemName;
@@ -90,6 +92,7 @@
                                     continue;
                                 }
                                 menuBar.$.addMenu("MenuItem", {id:popupMenuItem.menuItemName,label:popupMenuItem.menuTitle, itemData:popupMenuItem,
+                                    pageTitle:popupMenuItem.pageTitle,closable:popupMenuItem.closable,pageHref:popupMenuItem.pageHref,
                                     click:menuClickAddInnerPage
                                 });
                             }
@@ -101,11 +104,30 @@
         // },1000);
                                                                                                             //console.log("$$.request",$$.request);
         $$.request.getJSONData({url:"/getMainData"},function(result){                                       console.log("getJSONData /getMainData",result);
-            if(result)$$.createMainMenu(result.mainMenu);
+            if(!result)return;
+            if(result.mainMenu){
+                result.mainMenu.push({
+                    "menuItemName":"menuBarItemTDocSimpleTable1", "menuTitle":"tDocSimpleTable1", "pageTitle":"tDocSimpleTable1", pageHref:"/test/tDocSimpleTable1", "closable":true
+                });
+                result.mainMenu.push({
+                    "menuItemName":"menuBarItemTDocSimpleTable2wActions", "menuTitle":"tDocSimpleTable2wActions", "pageTitle":"tDocSimpleTable2wActions", pageHref:"/test/tDocSimpleTable2wActions", "closable":true
+                });
+            }
+            $$.createMainMenu(result.mainMenu);
+
+//        mainTabs.$.addInnerPage({region:"center", title:"Template Doc Simple Table 1", closable:true, style:"margin:0;padding:0;",href:"/test/tDocSimpleTable1"});
+            if($$.menuBarItemTDocSimpleTable1)$$.menuBarItemTDocSimpleTable1.click($$.menuBarItemTDocSimpleTable1);
+            if($$.menuBarItemTDocSimpleTable2wActions)$$.menuBarItemTDocSimpleTable2wActions.click($$.menuBarItemTDocSimpleTable2wActions);
         });
 
 //        $$("#main_Page").$.addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
-        mainTabs.$.addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
+        mainTabs.$.addInnerPage({region:"center", title:"innerPage_1", closable:false, style:"margin:0;padding:0;",href:"/ipage1"});
+
+//        mainTabs.$.addInnerPage({region:"center", id:"reportsCashier", title:"Отчеты кассира", closable:true, style:"margin:0;padding:0;",href:"/reports/cashier"},
+//                function(innerPage){
+//                    mainTabs.selectChild(mainTabs["reportsCashier"]=innerPage);
+//                });
+                                                                                                            console.log("MAIN PAGE STARTED! $$=",$$);//!!!IT'S FOR TESTING!!!
     });
 </script>
 </body>

@@ -3,7 +3,24 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
         "dijit/MenuBar", "dijit/MenuBarItem", "dijit/PopupMenuBarItem", "dijit/Menu", "dijit/MenuItem", "dijit/MenuSeparator",
         "dijit/form/Button","dijit/form/ToggleButton", "dijit/form/TextBox","dijit/form/DateTextBox"],
     function(){
-        var $ComponentFunctions= function($c){
+        var $ComponentFunctions= function($c,$page){
+            this.cid= function(name){
+                var cid=null;
+                if(window.dijit&&window.dijit.registry){
+                    cid=window.dijit.registry.byId(name);
+                }else{
+                    console.error("dijit/registry NOT INITIALIZED!!!"); return;
+                }
+                return cid;
+                //if(i)return i;//i.$=new $$Functions(i),i;
+                //var domNode=this.domNode;
+                //if(!domNode)domNode=document.body;
+                //var els=domNode.getElementsByTagName("*");
+                //for(var ind=0;ind<els.length;ind++){
+                //    var el=els[ind];
+                //    if("#"+el.id==args)return el;
+                //}
+            };
             this.val= function(val){
                 if(val===undefined)return $c.get("value");
                 $c.set("value",val);
@@ -24,6 +41,10 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
             this.addNew= function(Class, params){
                 if (!params) params={};
                 var newInstance=new Class(params);
+                if($page&&newInstance.id){
+                    $page[newInstance.id]=newInstance;
+                    if($page.$cItems)$page.$cItems[newInstance.id]=newInstance;
+                }
                 newInstance.$=new $ComponentFunctions(newInstance);
                 return newInstance;
             };
@@ -48,8 +69,7 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
             this.setHandlers=function(actionHandlers){
                 for (var actionName in actionHandlers) {
                     var actionHandler=actionHandlers[actionName];
-                    if(actionName=="click")
-                        this.setActionFor($c,"onClick",actionHandler);
+                    if(actionName=="click")this.setActionFor($c,"onClick",actionHandler);
                 }
                 return $c;
             };

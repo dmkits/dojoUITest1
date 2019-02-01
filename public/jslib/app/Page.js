@@ -1,8 +1,9 @@
-define(["dojo/_base/declare","dijit/layout/BorderContainer","app/tagParser","app/scriptsParser","app/InnerPage"],
-        function(declare,BorderContainer,tagParser,scriptsParser,InnerPage){
+define(["dojo/_base/declare","dijit/layout/BorderContainer","app/innerComponentFunctions","app/tagParser","app/InnerPage"],
+        function(declare,BorderContainer,InnerComponentFunctions,tagParser,InnerPage){
             return declare("Page",BorderContainer,{
                 constructor: function(args){
                     this.parseOnLoad=false;
+                    this.$= new InnerComponentFunctions(this);
                     this.$page={$parent:this,
                         dialogs:window.$$.dialogs,request:window.$$.request,
                         $dialogs:window.$$.dialogs,$request:window.$$.request

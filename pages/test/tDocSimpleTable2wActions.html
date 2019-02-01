@@ -1,69 +1,49 @@
-<LayoutContainer id="sa_database_PageContainer" style="width:100%;height:100%;margin:0px;padding:0;">
-    <ContentPane id="sa_database_ContentPaneTop" region="top" style="width:100%;margin:0;padding:0;">
-        <table width="100%" style="padding:0;text-align:left;border-top:none;border-left:none;border-right:none" class="dijitBorderContainer-child">
-            <tr>
-                <th>
-                    <span style="margin-left:20px;margin-right:10px;vertical-align:middle;font-size:14px;font-weight:bold">DATABASE:</span>
-                    <StackController style="" containerId="sadb_ContentContainer"></StackController>
-                </th>
-            </tr>
-        </table>
-    </ContentPane>
-    <StackContainer id="sadb_ContentContainer" region="center" tabPosition="top" style="width:100%;height:100%; margin:5px;padding:0;">
-        <TDocSimpleTable id="sadb_TDocDBCurrentChanges" title="Current changes" iconClass="dijitCheckBoxIcon" style="margin:0;padding:0;"></TDocSimpleTable>
-        <TDocSimpleTable id="sadb_TDocDBChangeLog" title="Change log" iconClass="dijitCheckBoxIcon" style="margin:0;padding:0;"></TDocSimpleTable>
-    </StackContainer>
-</LayoutContainer>
-<script type="text/javascript">                                                                             console.log("sysadmin database $$",$$);
-    var htDBCurrentChangesData={
-        columns:[
-            {data: "changeID", name: "changeID", width: 200, type: "text"},
-            {data: "changeDatetime", name: "changeDatetime", width: 120, type:"text", datetimeFormat:"YYYY-MM-DD HH:mm:ss"},
-            {data: "changeObj", name: "changeObj", width: 200, type: "text"},
-            {data: "changeVal", name: "changeVal", width: 450, type: "text"},
-            {data: "type", name: "type", width: 100, type: "text"},
-            {data: "message", name: "message", width: 200, type: "text"}
-        ],
-        identifier:"changeID",
-        items:[
-            {changeID:"1",changeObj:"o1",changeVal:"QWErtyUIOP",type:"str",message:"msg1"},
-            {changeID:"1-2",changeObj:"oo12",changeVal:"ASDfghJKL",type:"str",message:"msg22"},
-            {changeID:"1-2-3",changeObj:"ooo123",changeVal:"1234567890",type:"str",message:"msg333"}
-        ]
-    };
-//    $$.sadb_HTableDBCurrentChanges.updateContent(htDBCurrentChangesData);                     console.log("HTableDBCurrentChanges",$$.sadb_HTableDBCurrentChanges.getColumns(),$$.sadb_HTableDBCurrentChanges.getData());
-                                                                                                            console.log("HTableDBCurrentChanges",$$.sadb_TDocDBCurrentChanges);
-    $$.sadb_TDocDBCurrentChanges
-            .setParams({titleText: "Data model current changes", dataURL: '/sysadmin/database/getCurrentChanges',buttonPrint: false, rightPane:{width:200}})
-            .addTotalCountNumberBox("ИТОГО строк:", 140, {style: "font-weight:bold;", inputStyle: "width:40px;"})
+<TDocSimpleTable id="tDocSimpleTable2wActions" title="Template Document Simple Table 2 with actions" iconClass="dijitCheckBoxIcon" style="margin:0;padding:0;"></TDocSimpleTable>
+<script type="text/javascript">                                                                             console.log("INNER PAGE tDocSimpleTable2wActions",$$);
+    $$.tDocSimpleTable2wActions
+            .setParams({dataURL: '/reports/cashier/prodsRems', dataURLCondition:null, buttonPrint: false, rightPane:{width:300}})
+//            .addTotalCountNumberBox("ИТОГО строк:", 140, {style: "font-weight:bold;", inputStyle: "width:40px;"})
+            .addSelectBox("Stock",{valueItemName:"StockID", labelDataItem:"StockName",
+                loadDropDownURL:"/reports/cashier/getDirCRsForSelect",contentTableCondition:"StockID=", width:300})
+            .addHeaderDateBox("Date from",{contentTableCondition:"DocDate>="})
+            .addHeaderDateBox("Date to",{contentTableCondition:"DocDate<="})
+            .addCheckBtnCondition("ALL",{width:90})
+            .addCheckBtnCondition("NOT Null",{width:90,contentTableConditions:{"NULLs<>":"0"}})
+            .addCheckBtnCondition("Null",{width:90,contentTableConditions:{"NULLs~":"0"}})
+            .addTotalCountNumberBox("Total rows:", 140)
+            .addTotalSumNumberTextBox("Total qty:", 415, "TQty", {style:"font-weight:bold;"})
+//            .addTotalSumNumberTextBox("Total sum:", 205, "RealSum", {style:"font-weight:bold;",inputStyle:"width:95px",pattern:"#,###,###,###,##0.00#######"})
+//            .addTotalSumNumberTextBox("ИТОГО Скидка:", 185, "DiscountSum", {style:"font-weight:bold;",inputStyle:"width:75px",pattern:"#,###,###,###,##0.00#######"});
             .addToolPane({title:"info",
                 contentTableAction:function(params){
                     var info="";
                     if(params.contentTableSelectedRow){
-                        info+="<b>changeID</b>: "+params.contentTableSelectedRow["changeID"];
-                        info+="<br><b>changeDatetime</b>: "+params.contentTableSelectedRow["changeDatetime"];
-                        info+="<br><b>changeObj</b>: "+params.contentTableSelectedRow["changeObj"];
-                        info+="<br><b>changeVal</b>: "+params.contentTableSelectedRow["changeVal"];
-                        info+="<br><b>type</b>: "+params.contentTableSelectedRow["type"];
-                        info+="<br><b>message</b>: "+params.contentTableSelectedRow["message"];
+                        info+="<b>OurID</b>: "+params.contentTableSelectedRow["OurID"];
+                        info+="<br><b>StockID</b>: "+params.contentTableSelectedRow["StockID"];
+                        info+="<br><b>StockName</b>: "+params.contentTableSelectedRow["StockName"];
+                        info+="<br><b>PLID</b>: "+params.contentTableSelectedRow["PLID"];
+                        info+="<br><b>ProdID</b>: "+params.contentTableSelectedRow["ProdID"];
+                        info+="<br><b>ProdName</b>: "+params.contentTableSelectedRow["ProdName"];
+                        info+="<br><b>UM</b>: "+params.contentTableSelectedRow["UM"];
+                        info+="<br><b>Article1</b>: "+params.contentTableSelectedRow["Article1"];
+                        info+="<br><b>TQty</b>: "+params.contentTableSelectedRow["TQty"];
+                        info+="<br><b>PriceMC</b>: "+params.contentTableSelectedRow["PriceMC"];
+                        info+="<br><b>TQtySum</b>: "+params.contentTableSelectedRow["TQty"]*params.contentTableSelectedRow["PriceMC"];
                     }
                     params.thisToolPane.set("content",info);
                 }
             })
             .addToolPane({title:"apply changes"})
-            .addContentTableRowsAction("applyChangesRowData",{
+            .addContentTableRowsAction("rewritePPByRowData",{
                 startAction:function(contentTableRowsData, actionParams, startContentTableRowsAction){
                     actionParams["finishedCounterByNoConnection"]=0;actionParams["finishedCounterByFailed"]=0;
                     if(actionParams.toolPanes&&actionParams.toolPanes[0]) actionParams.toolPanes[0].set("content","");
                     startContentTableRowsAction();
                 },
                 tableRowAction:function(contentTableRowData, actionParams, contentTableUpdatedRowData, startNextAction, finishedAction){
-                    var changeID = contentTableRowData.changeID;
+                    var changeID = contentTableRowData.changeID;                    console.log("ContentTableRowsAction rewritePPByRowData contentTableRowData=",contentTableRowData);
                     var type = contentTableRowData.type;
-                    if (type !== "new"){
-                        startNextAction();
-                        return;
-                    }
+                    if (type !== "new"){ startNextAction(); return; }
                     //if type == "new"
                     $$.request.postJSONData({url: "/sysadmin/database/applyChange", condition: null, showRequestErrorDialog:false,
                                 data: {"CHANGE_ID": changeID, appliedDatetime:moment().format("YYYY.MM.DD HH:mm:ss")}, consoleLog: true },
@@ -128,23 +108,14 @@
                     if ($$.$parent.updateDBState) $$.$parent.updateDBState({revalidate:true});
                 }
             })
-            .addToolPaneActionButton("Apply all changes",{ btnStyle:"width:160px", contentTableActionName:"applyChangesRowData"})
-            .addContentTablePopupMenuAction("Apply selected changes...", {contentTableActionName:"applyChangesRowData"})
-            .addContentTablePopupMenuAction("Apply all changes...", {
-                contentTableActionName:"applyChangesRowData",
+            .addToolPaneActionButton("Rewrite Prod PP",{ btnStyle:"width:160px", contentTableActionName:"rewritePPByRowData"})
+            .addContentTablePopupMenuAction("Rewrite selected prods PPs...", {contentTableActionName:"rewritePPByRowData"})
+            .addContentTablePopupMenuAction("Rewrite all prods PPs...", {
+                contentTableActionName:"rewritePPByRowData",
                 beforeContentTableRowsAction:function(selectedTableContent, actionParams, startContentTableRowsAction){
                     startContentTableRowsAction(actionParams.thisInstance.getTableContent());
                 }
             });
-    $$.sadb_TDocDBChangeLog
-            .setParams({titleText: "database change log", dataURL: '/sysadmin/database/getChangeLog', dataURLCondition:{"1~":1}, buttonPrint: false})
-            .addTotalCountNumberBox("ИТОГО строк:", 140, {style: "font-weight:bold;", inputStyle: "width:40px;"});
-
-    $$.sadb_TDocDBCurrentChanges.onShow= function(){
-        if(!$$.sadb_TDocDBCurrentChanges.startedUp)$$.sadb_TDocDBCurrentChanges.startupDoc();
-    };
-    $$.sadb_TDocDBChangeLog.onShow= function(){
-        if(!$$.sadb_TDocDBChangeLog.startedUp) $$.sadb_TDocDBChangeLog.startupDoc();
-    };
-    $$.sadb_TDocDBCurrentChanges.onShow();
+    $$.tDocSimpleTable2wActions.startupDoc();
 </script>
+</html>

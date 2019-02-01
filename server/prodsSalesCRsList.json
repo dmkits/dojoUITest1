@@ -1,0 +1,29 @@
+{
+  "items":[
+    {
+      "value": -1,
+      "label": "Все кассы",
+      "selected": true
+    },
+    {
+      "value": 56,
+      "label": "Касса магазина 55 Фастів",
+      "selected": false
+    },
+    {
+      "value": 7,
+      "label": "Касса магазина 6 Калинівка 2 пов",
+      "selected": false
+    },
+    {
+      "value": 8,
+      "label": "Касса магазина 7 Калинівка 3 пов",
+      "selected": false
+    },
+    {
+      "value": 1,
+      "label": "Касса Склад Калинівка ДСП",
+      "selected": false
+    }
+  ]
+}

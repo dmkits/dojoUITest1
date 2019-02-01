@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "value": 1,
+      "label": "ЗАКРИТИЙ Склад Калинівка ДСП",
+      "selected": true
+    },
+    {
+      "value": 7,
+      "label": "Калинівка Каштан 2",
+      "selected": false
+    },
+    {
+      "value": 8,
+      "label": "Калинівка Каштан 3",
+      "selected": false
+    },
+    {
+      "value": 23,
+      "label": "Фастів",
+      "selected": false
+    }
+  ]
+}
