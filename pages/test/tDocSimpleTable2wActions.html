@@ -34,11 +34,11 @@
                 }
             })
             .addToolPane({title:"apply changes"})
-            .addContentTableRowsAction("rewritePPByRowData",{
-                startAction:function(contentTableRowsData, actionParams, startContentTableRowsAction){
+            .addContentTableAction("rewritePPByRowData",{
+                startAction:function(contentTableRowsData, actionParams, startContentTableAction){
                     actionParams["finishedCounterByNoConnection"]=0;actionParams["finishedCounterByFailed"]=0;
                     if(actionParams.toolPanes&&actionParams.toolPanes[0]) actionParams.toolPanes[0].set("content","");
-                    startContentTableRowsAction();
+                    startContentTableAction();
                 },
                 tableRowAction:function(contentTableRowData, actionParams, contentTableUpdatedRowData, startNextAction, finishedAction){
                     var changeID = contentTableRowData.changeID;                    console.log("ContentTableRowsAction rewritePPByRowData contentTableRowData=",contentTableRowData);
@@ -49,6 +49,8 @@
                                 data: {"CHANGE_ID": changeID, appliedDatetime:moment().format("YYYY.MM.DD HH:mm:ss")}, consoleLog: true },
                             function(result,error){
                                 var typeValue = type, changeMsg = null;
+
+
                                 var infoMsgByParams= function(actionParams){
                                     if(!actionParams.toolPanes||!actionParams.toolPanes[0]) return;
                                     var infoToolPaneMsg=null;
@@ -62,12 +64,14 @@
                                     }
                                     if(infoToolPaneMsg) actionParams.toolPanes[0].set("content",infoToolPaneMsg);
                                 };
+
+
                                 if(error&&error.reqError){
                                     if(!actionParams["finishedCounterByNoConnection"]) actionParams["finishedCounterByNoConnection"]=0;
                                     actionParams["finishedCounterByNoConnection"]++;
                                     infoMsgByParams(actionParams);
                                     if(actionParams["finishedCounterByNoConnection"]>10) {
-                                        $$.dialogs.showSimple({dialogID:"errorDialog", title:"FAIL",
+                                        $$.dialogs.showSimple({id:"errorDialog", title:"FAIL",
                                             content:"No connection to the server!"+((error.message)?"<br>Reason:"+error.message:""),
                                             btnOkLabel:"Close", width:350, style:"text-align:center"});
                                         finishedAction();
@@ -110,10 +114,9 @@
             })
             .addToolPaneActionButton("Rewrite Prod PP",{ btnStyle:"width:160px", contentTableActionName:"rewritePPByRowData"})
             .addContentTablePopupMenuAction("Rewrite selected prods PPs...", {contentTableActionName:"rewritePPByRowData"})
-            .addContentTablePopupMenuAction("Rewrite all prods PPs...", {
-                contentTableActionName:"rewritePPByRowData",
-                beforeContentTableRowsAction:function(selectedTableContent, actionParams, startContentTableRowsAction){
-                    startContentTableRowsAction(actionParams.thisInstance.getTableContent());
+            .addContentTablePopupMenuAction("Rewrite all prods PPs...", {contentTableActionName:"rewritePPByRowData",
+                beforeContentTableAction:function(selectedTableContent, actionParams, startContentTableAction){
+                    startContentTableAction(actionParams.thisInstance.getTableContent());
                 }
             });
     $$.tDocSimpleTable2wActions.startupDoc();

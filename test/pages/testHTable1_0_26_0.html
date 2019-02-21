@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" lang="ru" Accept-Language="ru"/>
+    <script type="text/javascript" src="/jslib/dojoApp.js" handsontable="handsontable-0.26.0" htableStyle="/css/htable.css"></script></head>
+    <link rel="stylesheet" type="text/css" href="/css/main.css" media="screen">
+    <title>testHTableSimple1 handsontable-0.26.0</title>
+<body class="claro">
+<page id="testHTableSimple1" design="headline" style="position:absolute;left:0;top:0;right:0;bottom:0;">
+    <ContentPane region="top">
+        <Button id="btnLoadFail">load fail</Button><Button id="btnLoadNonCorrect">load non correct</Button>
+        <Button id="btnLoadProdsSalesNoDuplex">load prodsSales no duplex</Button>
+        <Button id="btnLoadProdsSalesNoConditions">load prodsSales no conditions</Button>
+        <Button id="btnLoadProdsSalesEmptyConditions">load prodsSales empty conditions</Button>
+        <Button id="btnLoadProdsSalesEmptyConditionsObj">load prodsSales empty conditions obj</Button>
+        <Button id="btnLoadProdsSales">load prodsSales</Button>
+        <Button id="btnLoadProdsRems">load prodsRems</Button>
+    </ContentPane>
+    <HTableSimple id="hTableSimple1" region="center" title="HTable simple 1" style="margin:0;padding:0;"></HTableSimple>
+</page>
+<script type="text/javascript">
+    $app.dev=true;
+    $app.startup("#testHTableSimple1",function(){                                                        log("START testHTableSimple1 PAGE...",$$);//!!!IT'S FOR TESTING!!!
+        $$.hTableSimple1.onUpdateContent=function(params){
+            log("hTableSimple1.onUpdateContent params=",params)
+        };
+        $$.hTableSimple1.onSelect=function(firstSelectedRowData, selection){
+            this.setSelection(firstSelectedRowData, selection);
+            log("hTableSimple1.onSelect firstSelectedRowData=",firstSelectedRowData, "selection=",selection)
+        };
+        $$.btnLoadFail.onClick= function(){
+            $$.hTableSimple1.setContentFromUrl({url:"/test/1234567890-="});
+        };
+        $$.btnLoadNonCorrect.onClick= function(){
+            $$.hTableSimple1.setContentFromUrl({url:"/test/prodsSalesData.json"});
+        };
+        $$.btnLoadProdsSalesNoDuplex.onClick= function(){
+            $$.hTableSimple1.setContentFromUrl({url:"/test/prodsSalesWDupl"});
+        };
+        $$.btnLoadProdsSalesNoConditions.onClick= function(){
+            $$.hTableSimple1.setContentFromUrl({url:"/test/prodsSales"});
+        };
+        $$.btnLoadProdsSalesEmptyConditions.onClick= function(){
+            $$.hTableSimple1.setContentFromUrl({url:"/test/prodsSales", conditions:" "});
+        };
+        $$.btnLoadProdsSalesEmptyConditionsObj.onClick= function(){
+            $$.hTableSimple1.setContentFromUrl({url:"/test/prodsSales", conditions:{}});
+        };
+        $$.btnLoadProdsSales.onClick= function(){
+            $$.hTableSimple1.setContentFromUrl({url:"/test/prodsSales", conditions:{"1=":1}});
+        };
+        $$.btnLoadProdsRems.onClick= function(){
+            $$.hTableSimple1.setContentFromUrl({url:"/test/prodsRems", conditions:{"1=":1}});
+        };
+    });
+</script>
+</body>
+</html>

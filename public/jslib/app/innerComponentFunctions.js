@@ -39,7 +39,7 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
                 return $c;
             };
             this.addNew= function(Class, params){
-                if (!params) params={};
+                if(!params) params={};
                 var newInstance=new Class(params);
                 if($page&&newInstance.id){
                     $page[newInstance.id]=newInstance;
@@ -49,9 +49,11 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
                 return newInstance;
             };
             this.addChildTo= function(o, Class, params) {
-                if(!o||!Class) return;
-                if (!params) params={};
-                var child= o.$.addNew(Class, params);
+                if(!o||!Class) {
+                    console.error("$ComponentFunctions addChildTo FAIL! Reason:no instance or no Class");return;
+                }
+                if(!params) params={};
+                var child= o.$.addNew(Class, params);                                            console.log("addChildTo",child);
                 o.addChild(child);
                 return child;
             };

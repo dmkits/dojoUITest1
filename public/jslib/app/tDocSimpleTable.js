@@ -1,8 +1,8 @@
 /**
  * Created by dmkits on 18.12.16.
  */
-define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunctions", "app/base", "dijit/form/Select", "app/hTableSimpleFiltered","app/request"],
-    function(declare, BorderContainer, TDocsFunctions, Base, Select, HTable, Request) {
+define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunctions", "app/base", "app/hTableSimpleFiltered","app/request"],
+    function(declare, BorderContainer, TDocsFunctions, Base, HTable, Request) {
         var $TDF=TDocsFunctions;
         return declare("TDocSimpleTable", [BorderContainer], {
             /**
@@ -11,28 +11,29 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
             *       buttonUpdate, buttonPrint, buttonExportToExcel,
             *       printFormats={ ... } }
             * default:
-            * rightPane.width=150,
-            * buttonUpdate=true, buttonPrint=true, buttonExportToExcel=true,
+            *   rightPane.width=150,
+            *   buttonUpdate=true, buttonPrint=true, buttonExportToExcel=true,
             * default printFormats={ dateFormat:"DD.MM.YY", numericFormat:"#,###,###,###,##0.#########", currencyFormat:"#,###,###,###,##0.00#######" }
-            * */
-            constructor: function(args,parentName){
+            */
+            constructor: function(args){
                 this.titleText=this.title||"";
                 this.dataURL=null; this.dataURLCondition=null;
                 this.buttonUpdate= true;
                 this.buttonPrint= true;
                 this.buttonExportToExcel= true;
                 this.printFormats= { dateFormat:"DD.MM.YY", numericFormat:"#,###,###,###,##0.#########", currencyFormat:"#,###,###,###,##0.00#######" };
-                this.detailContentErrorMsg="Failed get data!";
-
-                this.srcNodeRef = document.getElementById(parentName);//???
-
                 declare.safeMixin(this,args);
                 if(args.rightPane&& typeof(args.rightPane)=="object") this.rightContainerParams=args.rightPane;
-                                                                                                        console.log("TDocSimpleTable",this,$TDF);
             },
+            /**
+             * params: {titleText, dataURL, dataURLCondition={...},
+            *       rightPane:{ width:<width>, ... },
+            *       buttonUpdate, buttonPrint, buttonExportToExcel,
+            *       printFormats={ ... } or other. }
+            */
             setParams: function(params){
                 if(!params)return this;
-                for (var pName in params) {
+                for(var pName in params) {
                     var pValue=params[pName];
                     if(pName=="titleText"&&this.topHeaderTitle)this.topHeaderTitle.innerHTML=pValue;
                     if(pName=="rightPane")this.createRightContent(pValue);
@@ -50,9 +51,6 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 topTableHeaderCell.appendChild(topHeaderText);
                 var btnsTable = $TDF.addTableTo(this.topContent.containerNode);
                 this.btnsTableRow = $TDF.addRowToTable(btnsTable);
-                var topTableErrorMsg = $TDF.addTableTo(this.topContent.containerNode);
-                var topTableErrorMsgRow=$TDF.addRowToTable(topTableErrorMsg);
-                this.topTableErrorMsg= $TDF.addLeftCellToTableRow(topTableErrorMsgRow,1);
             },
             createContentTable: function(HTable, params){
                 if (!params) params={};
@@ -64,12 +62,20 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 if (params.allowFillHandle===undefined) params.allowFillHandle=false;
                 this.addChild(this.contentTable=new HTable(params));
                 var instance = this;
-                this.contentTable.onUpdateContent = function(){ instance.onUpdateTableContent(); };
+                this.contentTable.onUpdateContent = function(){
+                    if(!this.getSelectedRow()) this.setSelectedRowByIndex(0);
+                    instance.onUpdateTableContent();
+                };
                 this.contentTable.onSelect = function(firstSelectedRowData, selection){
                     this.setSelection(firstSelectedRowData, selection);
                     instance.onSelectTableContent(firstSelectedRowData, selection);
                 };
             },
+            /**
+             * params: { width:<width>, ... }, right pane params
+             * default:
+             *   params.width=150
+             */
             createRightContent: function(params){
                 if(!this.rightContainerParams&&params)this.rightContainerParams=params;
                 if(!this.rightContainerParams)return this;
@@ -84,38 +90,34 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 this.createTopContent();
                 this.createContentTable(HTable);
                 this.createRightContent();
-                this.startup();//this.layout();
+                this.startup();
             },
-            loadTableContent: function(additionalCondition){                                                //console.log("TDocSimpleTable loadTableContent",this.dataURL,this);
-                var condition = (this.dataURLCondition)?this.dataURLCondition:{};
+            loadTableContent: function(additionalConditions){                                               //console.log("TDocSimpleTable loadTableContent",this.dataURL,this);
+                var conditions = (this.dataURLCondition)?this.dataURLCondition:{};
                 if(this.headerData){
                     for(var i=0; i<this.headerData.length;i++){
                         var headerDataItem=this.headerData[i], headerInstanceType=headerDataItem.type, headerInstance=headerDataItem.instance;
                         if(headerInstanceType=="DateBox"&&headerInstance.contentTableCondition){
-                            condition[headerInstance.contentTableCondition.replace("=","~")] =
+                            conditions[headerInstance.contentTableCondition.replace("=","~")] =
                                 headerInstance.format(headerInstance.get("value"),{selector:"date",datePattern:"yyyy-MM-dd"});
                         }else if(headerInstanceType=="DateBox"&&headerInstance.contentTableParam){
-                            condition[headerInstance.contentTableParam] =
+                            conditions[headerInstance.contentTableParam] =
                                 headerInstance.format(headerInstance.get("value"),{selector:"date",datePattern:"yyyy-MM-dd"});
                         }else if(headerInstanceType=="CheckButton"&&headerInstance.checked==true&&headerInstance.contentTableConditions){
                             var checkBtnConditions=headerInstance.contentTableConditions;
-                            for(var conditionItemName in checkBtnConditions) condition[conditionItemName]=checkBtnConditions[conditionItemName];
+                            for(var conditionItemName in checkBtnConditions) conditions[conditionItemName]=checkBtnConditions[conditionItemName];
                         } else if(headerInstanceType=="SelectBox"&&headerInstance.contentTableCondition){
-                            condition[headerInstance.contentTableCondition.replace("=","~")] =headerInstance.get("value");
+                            conditions[headerInstance.contentTableCondition.replace("=","~")] =headerInstance.get("value");
                         }
                     }
                 }
-                if (additionalCondition)
-                    for(var addConditionItemName in additionalCondition)
-                        condition[addConditionItemName.replace("=","~")]=additionalCondition[addConditionItemName];
-                this.contentTable.setContentFromUrl({url:this.dataURL,condition:condition, clearContentBeforeLoad:true});
+                if(additionalConditions)
+                    for(var addConditionItemName in additionalConditions)
+                        conditions[addConditionItemName.replace("=","~")]=additionalConditions[addConditionItemName];
+                this.contentTable.setContentFromUrl({url:this.dataURL,conditions:conditions, clearContentBeforeLoad:true});
             },
             reloadTableContentByCondition: function(additionalCondition){                                   //console.log("TDocSimpleTable reloadTableContentByCondition condition=",condition);
                 this.loadTableContent(additionalCondition);
-            },
-            setDetailContentErrorMsg: function(detailContentErrorMsg){
-                this.detailContentErrorMsg= detailContentErrorMsg;
-                return this;
             },
             getTableContent: function(){
                 return this.contentTable.getContent();
@@ -127,11 +129,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 return this.contentTable.getContentItemSum(tableItemName);
             },
             onUpdateTableContent: function(){
-                if(this.contentTable.getDataError())
-                    this.topTableErrorMsg.innerHTML= "<b style='color:red'>"+this.detailContentErrorMsg+" Reason: "+this.contentTable.getDataError()+"</b>";
-                else
-                    this.topTableErrorMsg.innerHTML="";
-                if (!this.totals) return;
+                if(!this.totals) return;
                 for(var tableItemName in this.totals){
                     var totalBox = this.totals[tableItemName];
                     totalBox.updateValue();
@@ -165,9 +163,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 if(params.contentTableCondition) dateBox.contentTableCondition=params.contentTableCondition;
                 if(params.contentTableParam) dateBox.contentTableParam=params.contentTableParam;
                 var instance = this;
-                dateBox.onChange = function(){
-                    instance.loadTableContent();
-                };
+                dateBox.onChange = function(){ instance.loadTableContent(); };
                 return this;
             },
             /**
@@ -178,7 +174,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 if(!params) params={};
                 if (params.width===undefined) params.width=100;
                 var btnChecked= true;
-                if (this.headerData) {
+                if(this.headerData){
                     for(var i=0;i<this.headerData.length;i++)
                         if(this.headerData[i].type=="CheckButton"){
                             btnChecked= false; break;
@@ -194,7 +190,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 checkBtn.onClick = function(){
                     for(var i=0;i<instance.headerData.length;i++) {
                         var headerDataItem = instance.headerData[i];
-                        if (headerDataItem.type=="CheckButton"&&headerDataItem.instance!=this)
+                        if(headerDataItem.type=="CheckButton"&&headerDataItem.instance!=this)
                             headerDataItem.instance.set("checked", false, false);
                         else
                             headerDataItem.instance.set("checked", true, false);
@@ -204,50 +200,43 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 return this;
             },
             /**
-             * params : { width, labelDataItem, loadDropDownURL, contentTableCondition:"<conditions>" }
-             * --style, inputStyle,--for adding dmkits 20181115
+             * params : { width, selectStyle, labelDataItem, loadDropDownURL, contentTableCondition:"<conditions>" }
              */
             addSelectBox:function(label, params){
-                if (!params) params={};
+                if(!params) params={};
                 if(!params.width)params.width=275;
-                var input=$TDF.addTableInputTo(this.topTableRow,{labelText:label, labelStyle:"margin-left:5px; ",
-                    cellWidth:params.width, cellStyle:"text-align:right;padding-left:10px;"});
-                var select= Base.instanceFor(input, Select,{style:"width:180px;",
-                    labelDataItem:params.labelDataItem,
-                    loadDropDownURL:params.loadDropDownURL,contentTableCondition:params.contentTableCondition});
-
-                select.printParams = {cellWidth:params.width, labelText:label/*, printStyle:params.style*/};
-
+                var select= $TDF.addTableCellSelectTo(this.topTableRow, {labelText:label, labelStyle:"margin-left:5px;",
+                    selectStyle:params.selectStyle,
+                    cellWidth:params.width,cellStyle:"text-align:right;padding-left:10px;",
+                    selectParams:{labelDataItem:params.labelDataItem,
+                        loadDropDownURL:params.loadDropDownURL,contentTableCondition:params.contentTableCondition} });
                 if(!this.headerData) this.headerData=[];
                 this.headerData.push({type:"SelectBox",instance:select});
                 select.loadDropDownValuesFromServer= function(callback){
                     Request.getJSONData({url: select.loadDropDownURL, resultItemName:"items"},
-                        function (resultItems) {
+                        function(resultItems){
                             var options=select.get("options"),value = select.get("value");
-                            if (resultItems) {
-                                select.set("options", resultItems);
-                                select.set("value", value);
+                            if(resultItems){
+                                select.set("options", resultItems); select.set("value", value);
                             }
                             if(callback) callback();
                         });
                 };
                 select.selectToggleDropDown= select.toggleDropDown;
-                select.toggleDropDown= function(){                                                          //console.log("TDocSimpleTable.setSelectDropDown toggleDropDown");
+                select.toggleDropDown= function(){
                     select.loadDropDownValuesFromServer(function(){
                         select.selectToggleDropDown();
                     });
                 };
                 var thisInstance=this;
-                select.onChange=function(){                    console.log("select.onChange");
-                    thisInstance.loadTableContent();
-                };
+                select.onChange=function(){ thisInstance.loadTableContent(); };
                 return this;
             },
-            /*
+            /**
              * onClickAction = function(this.contentTableContent,this.contentTableInstance)
              */
             addBtn: function(labelText, width, onClickAction){
-                if (width===undefined) width=100;
+                if(width===undefined) width=100;
                 var btn= $TDF.addTableCellButtonTo(this.topTableRow, {labelText:labelText, cellWidth:width, cellStyle:"text-align:right;"});
                 var instance= this;
                 btn.onClick = function(){
@@ -256,44 +245,38 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 return this;
             },
             addBtnUpdate: function(width, labelText){
-                if (width===undefined) width=200;
-                if (!labelText) labelText="Обновить";
+                if(width===undefined) width=200;
+                if(!labelText) labelText="Обновить";
                 this.btnUpdate= $TDF.addTableCellButtonTo(this.topTableRow, {labelText:labelText, cellWidth:width, cellStyle:"text-align:right;"});
                 var instance= this;
-                this.btnUpdate.onClick = function(){
-                    instance.loadTableContent();
-                };
+                this.btnUpdate.onClick = function(){ instance.loadTableContent(); };
                 return this;
             },
-            /*
+            /**
              * params = { items:["print1","print2",...] }
              */
             addBtnPrint: function(width, labelText, printFormats, params){
-                if (width===undefined) width=100;
-                if (!labelText) labelText="Печатать";
-                var btnParams={labelText:labelText, cellWidth:1, cellStyle:"text-align:right;"};
+                if(width===undefined) width=1;
+                if(!labelText) labelText="Печатать";
+                var btnParams={labelText:labelText, cellWidth:width, cellStyle:"text-align:right;"};
                 if(params&&params.items!=undefined&&params.items.length>0){
                     btnParams.items=params.items;
                 }
                 this.btnPrint= $TDF.addTableCellButtonTo(this.topTableRow,btnParams);
                 var instance = this;
-                this.btnPrint.onClick = function(){
-                    instance.doPrint();
-                };
+                this.btnPrint.onClick = function(){ instance.doPrint(); };
                 return this;
             },
             addBtnExportToExcel: function(width, labelText){
-                if (width===undefined) width=100;
-                if (!labelText) labelText="Экспорт в excel";
-                this.btnExportToExcel= $TDF.addTableCellButtonTo(this.topTableRow, {labelText:labelText, cellWidth:1, cellStyle:"text-align:right;"});
+                if(width===undefined) width=1;
+                if(!labelText) labelText="Экспорт в excel";
+                this.btnExportToExcel= $TDF.addTableCellButtonTo(this.topTableRow, {labelText:labelText, cellWidth:width, cellStyle:"text-align:right;"});
                 var instance = this;
-                this.btnExportToExcel.onClick = function(){
-                    instance.exportTableContentToExcel();
-                };
+                this.btnExportToExcel.onClick = function(){ instance.exportTableContentToExcel(); };
                 return this;
             },
             setTotalContent: function(){
-                if (!this.totalContent) {
+                if(!this.totalContent){
                     this.totalContent = $TDF.setChildContentPaneTo(this, {region:'bottom',style:"margin:0;padding:0;border:none;"});
                     this.totalTable = $TDF.addTableTo(this.totalContent.containerNode);
                     this.addTotalRow();
@@ -302,7 +285,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
             },
             addTotalRow: function(){
                 this.totalTableRow = $TDF.addRowToTable(this.totalTable);
-                if (!this.totalTableData) this.totalTableData= [];
+                if(!this.totalTableData) this.totalTableData= [];
                 this.totalTableData.push([]);
                 return this;
             },
@@ -319,7 +302,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 //var totalTableCellDiv = document.createElement("div");
                 //totalTableCellDiv.setAttribute("style","width:"+width+"px");
                 //totalTableCell.appendChild(totalTableCellDiv);
-                if (text) totalTableCell.appendChild(document.createTextNode(text));
+                if(text) totalTableCell.appendChild(document.createTextNode(text));
                 return this;
             },
             /**
@@ -332,28 +315,26 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
              */
             addTotalNumberBox: function(labelText, width, totalItemName, params){
                 this.setTotalContent();
-                if (!params) params={};
-                if (!params.style&&totalItemName=="TableRowCount") params.style="font-weight:bold;";
-                else if (!params.style) params.style="";
-                if (!params.inputStyle&&totalItemName&&totalItemName.indexOf("QTY")>=0) params.inputStyle="width:60px";
-                else if (!params.inputStyle&&totalItemName&&totalItemName.indexOf("SUM")>=0) params.inputStyle="width:90px";
-                else if (!params.inputStyle) params.inputStyle="width:50px";
-                if (params.inputStyle&&params.inputStyle.indexOf("width:")<0) params.inputStyle+=";width:50px;";
-                if (!params.pattern&&totalItemName.indexOf("SUM")>=0) params.pattern="#,###,###,###,##0.00#######";
+                if(!params) params={};
+                if(!params.style&&totalItemName=="TableRowCount") params.style="font-weight:bold;";
+                else if(!params.style) params.style="";
+                if(!params.inputStyle&&totalItemName&&totalItemName.indexOf("QTY")>=0) params.inputStyle="width:60px";
+                else if(!params.inputStyle&&totalItemName&&totalItemName.indexOf("SUM")>=0) params.inputStyle="width:90px";
+                else if(!params.inputStyle) params.inputStyle="width:50px";
+                if(params.inputStyle&&params.inputStyle.indexOf("width:")<0) params.inputStyle+=";width:50px;";
+                if(!params.pattern&&totalItemName.indexOf("SUM")>=0) params.pattern="#,###,###,###,##0.00#######";
                 else if(!params.pattern) params.pattern="#,###,###,###,##0.#########";
                 var totalNumberTextBox= $TDF.addTableCellNumberTextBoxTo(this.totalTableRow,
-                    {cellWidth:width, cellStyle:"text-align:right;",
-                        labelText:labelText, labelStyle:params.style, inputStyle:"text-align:right;"+params.style+params.inputStyle,
-                        inputParams:{constraints:{pattern:params.pattern}, readOnly:true,
-                            /*it's for print*/cellWidth:width, labelText:labelText, printStyle:params.style,
-                            inputStyle:"text-align:right;"+params.inputStyle, typeFormat:params.pattern } });
-                if (!this.totals) this.totals = {};
+                    {cellWidth:width, cellStyle:"text-align:right;", labelText:labelText, labelStyle:params.style,
+                        inputStyle:"text-align:right;"+params.style+params.inputStyle,
+                        inputParams:{constraints:{pattern:params.pattern}, readOnly:true } });
+                if(!this.totals) this.totals = {};
                 this.totals[totalItemName]= totalNumberTextBox;
                 var totalTableRowData= this.totalTableData[this.totalTableData.length-1];
                 totalTableRowData.push(totalNumberTextBox);
                 return totalNumberTextBox;
             },
-            /*
+            /**
              * params { style, inputStyle }
              */
             addTotalCountNumberBox: function(labelText, width, params){
@@ -364,7 +345,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 };
                 return this;
             },
-            /*
+            /**
              * params { style, inputStyle, pattern }
              * default pattern="#,###,###,###,##0.#########"
              */
@@ -384,23 +365,23 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
              *      contentTableSelectedRow:<this.contentTable.getSelectedRow()> }
              */
             addToolPane: function(params){
-                if(!this.rightContainer) {
+                if(!this.rightContainer){
                     console.error("WARNING! Failed addToolPane! Reason: no rightContainer!");
                     return this;
                 }
                 if(!params) params={};
-                if (params.title===undefined) params.title="";
-                if (params.width===undefined) params.width=100;
+                if(params.title===undefined) params.title="";
+                if(params.width===undefined) params.width=100;
                 var actionsTitlePane= $TDF.addChildTitlePaneTo(this.rightContainer,{title:params.title});
-                if (params.contentTableAction) actionsTitlePane.contentTableAction = params.contentTableAction;
-                if (!this.toolPanes) this.toolPanes= [];
+                if(params.contentTableAction) actionsTitlePane.contentTableAction = params.contentTableAction;
+                if(!this.toolPanes) this.toolPanes= [];
                 this.toolPanes.push(actionsTitlePane);
                 $TDF.addTableTo(actionsTitlePane.containerNode);
                 return this;
             },
             callToolPanesContentTableActions: function(firstSelectedRowData){
                 if(!this.toolPanes) return;
-                for (var i = 0; i < this.toolPanes.length; i++) {
+                for(var i = 0; i < this.toolPanes.length; i++){
                     var toolPane = this.toolPanes[i];
                     if(!toolPane.contentTableAction) continue;
                     if(!firstSelectedRowData) firstSelectedRowData=this.contentTable.getSelectedRow();
@@ -424,14 +405,15 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 return this;
             },
             /**
-             * actions = { startAction, tableRowAction, endAction }
+             * actions = { action } || actions = { startAction, tableRowAction, endAction }
+             *      action = function(contentTableRowsData, actionParams)
              *      startAction = function(contentTableRowsData, actionParams, startTableRowActions)
              *      tableRowAction = function(contentTableRowData, actionParams, contentTableUpdatedRowData, startNextAction, finishedAction)
-             *          startNextAction = function(true/false), if false- restart current action
+             *          startNextAction = function(true/false), if false- repeat current row action
              *      endAction = function(contentTableRowsData, actionParams)
              *      actionParams = { contentTableInstance, toolPanes, thisInstance }
              */
-            addContentTableRowsAction: function(actionName, actions){
+            addContentTableAction: function(actionName, actions){
                 if(!actions) return this;
                 if(!this.contentTableActions) this.contentTableActions={};
                 this.contentTableActions[actionName] = {
@@ -443,27 +425,27 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
             },
 
             /**
-             * actionParams = { btnStyle, btnParams, actionFunction, contentTableActionName, beforeContentTableRowsAction }
+             * actionParams = { btnStyle, btnParams, contentTableActionName, beforeContentTableAction, actionFunction }
              *      actionFunction = function(actionParams)
              *          actionParams = { contentTableRowsData, contentTableInstance, toolPanes, thisInstance }
-             *      beforeContentTableRowsAction = function(contentTableRowsData, actionParams, startContentTableRowsAction)
+             *      beforeContentTableAction = function(contentTableRowsData, actionParams, startContentTableAction)
              *          actionParams = { contentTableInstance, toolPanes, thisInstance }
-             *          startContentTableRowsAction= function(contentTableRowsDataForAction)
+             *          startContentTableAction= function(contentTableRowsDataForAction)
              */
             addToolPaneActionButton: function(label, actionParams){
-                if(!this.rightContainer) {
+                if(!this.rightContainer){
                     console.error("WARNING! Failed addToolPaneActionButton! Reason: no rightContainer!");
                     return this;
                 }
-                if (!this.toolPanes||this.toolPanes.length==0) this.addToolPane("");
+                if(!this.toolPanes||this.toolPanes.length==0) this.addToolPane("");
                 var actionsTableRow= $TDF.addRowToTable(this.toolPanes[this.toolPanes.length-1].containerNode.lastChild);
                 if(!actionParams) actionParams={};
                 var actionButton= $TDF.addTableCellButtonTo(actionsTableRow, {labelText:label, cellWidth:0,
                     btnStyle:actionParams.btnStyle, btnParameters:actionParams.btnParams});
-                if (!this.toolPanesActionButtons) this.toolPanesActionButtons={};
+                if(!this.toolPanesActionButtons) this.toolPanesActionButtons={};
                 var actionFunctionParams={contentTableInstance:this.contentTable, toolPanes:this.toolPanes, thisInstance:this,
                     contentTableRowsData:this.getTableContent()};
-                if(actionParams.actionFunction) {
+                if(actionParams.actionFunction){
                     actionButton.onClick=function(){
                         actionParams.actionFunction(actionFunctionParams);
                     };
@@ -471,33 +453,33 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 }
                 var thisInstance=this;
                 var contentTableRowAction, contentTableRowsActionFunction;
-                if (actionParams.contentTableActionName)
+                if(actionParams.contentTableActionName)
                     contentTableRowAction= this.contentTableActions[actionParams.contentTableActionName];
                 if(contentTableRowAction&&contentTableRowAction.startActionFunction&&contentTableRowAction.tableRowActionFunction){
                     contentTableRowsActionFunction= function(tableContentForAction,actionParams){
                         contentTableRowAction.startActionFunction(tableContentForAction, actionParams,
-                            /*startContentTableRowsAction*/function(){
+                            /*startContentTableAction*/function(){
                                 thisInstance.contentTable.updateRowsAction(tableContentForAction, actionParams,
                                     contentTableRowAction.tableRowActionFunction, contentTableRowAction.endActionFunction);
                             });
                     };
-                } else if(contentTableRowAction&&contentTableRowAction.tableRowActionFunction){
+                }else if(contentTableRowAction&&contentTableRowAction.tableRowActionFunction){
                     contentTableRowsActionFunction= function(tableContentForAction,actionParams){
                         thisInstance.contentTable.updateRowsAction(tableContentForAction, actionParams,
                             contentTableRowAction.tableRowActionFunction, contentTableRowAction.endActionFunction);
                     };
                 }
-                if(actionParams.beforeContentTableRowsAction){
+                if(actionParams.beforeContentTableAction){
                     actionButton.onClick= function(){
                         var contentTableRowsData=thisInstance.getTableContent();
-                        actionParams.beforeContentTableRowsAction(contentTableRowsData,actionParams,
+                        actionParams.beforeContentTableAction(contentTableRowsData,actionParams,
                             function(contentTableRowsDataForAction){
                                 if(!contentTableRowsDataForAction) contentTableRowsDataForAction=contentTableRowsData;
                                 if(contentTableRowsActionFunction)
                                     contentTableRowsActionFunction(contentTableRowsDataForAction, actionParams);
                             });
                     }
-                } else if(contentTableRowsActionFunction)
+                }else if(contentTableRowsActionFunction)
                     actionButton.onClick= function(){
                         var contentTableRowsData=thisInstance.getTableContent();
                         contentTableRowsActionFunction(contentTableRowsData, actionParams);
@@ -506,11 +488,11 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
             },
 
             /**
-             * actionParams = { btnStyle, btnParams, actionFunction, contentTableActionName, beforeContentTableRowsAction }
+             * actionParams = { btnStyle, btnParams, actionFunction, contentTableActionName, beforeContentTableAction }
              *      actionFunction = function(selectedTableContent, actionParams)
-             *      beforeContentTableRowsAction = function(selectedTableContent, actionParams, startContentTableRowsAction)
+             *      beforeContentTableAction = function(selectedTableContent, actionParams, startContentTableAction)
              *          actionParams = { contentTableInstance, toolPanes, thisInstance }
-             *          startContentTableRowsAction= function(contentTableRowsDataForAction)
+             *          startContentTableAction= function(contentTableRowsDataForAction)
              */
             addContentTablePopupMenuAction: function(itemName, actionParams){
                 var thisInstance=this, thisContentTable= this.contentTable;
@@ -519,35 +501,35 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 actionParams.toolPanes=thisInstance.toolPanes;
                 actionParams.thisInstance=thisInstance;
                 var menuItemActionFunction;
-                if(actionParams.actionFunction) {
+                if(actionParams.actionFunction){
                     menuItemActionFunction= actionParams.actionFunction;
-                } else {
+                }else{
                     var contentTableRowAction= this.contentTableActions[actionParams.contentTableActionName];
                     var contentTableRowsActionFunction;
                     if(contentTableRowAction&&contentTableRowAction.startActionFunction&&contentTableRowAction.tableRowActionFunction){
                         contentTableRowsActionFunction=function(rowsDataForAction, actionParams){
                             contentTableRowAction.startActionFunction(rowsDataForAction, actionParams,
-                                /*startContentTableRowsAction*/function(){
+                                /*startContentTableAction*/function(){
                                     thisInstance.contentTable.updateRowsAction(rowsDataForAction, actionParams,
                                         contentTableRowAction.tableRowActionFunction, contentTableRowAction.endActionFunction);
                                 });
                         };
-                    } else if(contentTableRowAction&&contentTableRowAction.tableRowActionFunction){
+                    }else if(contentTableRowAction&&contentTableRowAction.tableRowActionFunction){
                         contentTableRowsActionFunction=function(rowsDataForAction, actionParams){
                             thisInstance.contentTable.updateRowsAction(rowsDataForAction, actionParams,
                                 contentTableRowAction.tableRowActionFunction, contentTableRowAction.endActionFunction);
                         }
                     }
-                    if(actionParams.beforeContentTableRowsAction){
+                    if(actionParams.beforeContentTableAction){
                         menuItemActionFunction= function(rowsDataForAction, actionParams){
-                            actionParams.beforeContentTableRowsAction(rowsDataForAction, actionParams,
+                            actionParams.beforeContentTableAction(rowsDataForAction, actionParams,
                                 function(contentTableRowsDataForAction){
                                     if(!contentTableRowsDataForAction) contentTableRowsDataForAction=rowsDataForAction;
                                     if(contentTableRowsActionFunction)
                                         contentTableRowsActionFunction(contentTableRowsDataForAction, actionParams)
                                 })
                         }
-                    } else if (contentTableRowsActionFunction){
+                    }else if(contentTableRowsActionFunction){
                         menuItemActionFunction= contentTableRowsActionFunction;
                     }
                 }
@@ -562,9 +544,9 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
             },
 
             startupDoc: function(){
-                if (this.buttonUpdate!=false&&!this.btnUpdate) this.addBtnUpdate();
-                if (this.buttonPrint!=false&&!this.btnPrint) this.addBtnPrint();
-                if (this.buttonExportToExcel!=false&&!this.btnExportToExcel) this.addBtnExportToExcel();
+                if(this.buttonUpdate!=false&&!this.btnUpdate) this.addBtnUpdate();
+                if(this.buttonPrint!=false&&!this.btnPrint) this.addBtnPrint();
+                if(this.buttonExportToExcel!=false&&!this.btnExportToExcel) this.addBtnExportToExcel();
                 this.layout();
                 if(this.headerData)
                     for(var i=0;i<this.headerData.length;i++){
@@ -579,7 +561,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
              */
             doPrint: function(printFormats){
                 var printData = {};
-                if (this.titleText) {
+                if(this.titleText){
                     $TDF.addPrintDataSubItemTo(printData, "header",{label:this.titleText, width:0, align:"center",
                         style:"width:100%;font-size:14px;font-weight:bold;text-align:center;",contentStyle:"margin-top:5px;margin-bottom:3px;"});
                 }
@@ -605,13 +587,13 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 printData.columns = this.contentTable.getVisibleColumns();                                  //console.log("TDocSimpleTable doPrint printData.columns=",this.contentTable.getVisibleColumns());
                 printData.data = this.contentTable.getContent();
                 var totalStyle="font-size:12px;";
-                if (this.totals){
+                if(this.totals){
                     for(var tRowIndex in this.totalTableData){
                         var tRowData= this.totalTableData[tRowIndex];
                         $TDF.addPrintDataItemTo(printData, "total", {style:totalStyle});
                         for(var tCellIndex in tRowData){
                             var tCellData= tRowData[tCellIndex];
-                            if (tCellData===null) {
+                            if(tCellData===null){
                                 $TDF.addPrintDataSubItemTo(printData, "total");
                                 continue
                             }

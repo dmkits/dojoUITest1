@@ -39,6 +39,9 @@ module.exports= function(app) {
     app.get("/sysadmin/Database", function (req, res) {
         res.sendFile(appViewsPath + '/sysadmin/database.html');
     });
+    app.get("/sysadmin/Database/get1", function (req, res) {
+        res.send();
+    });
     var tDBCurrentChangesData={
         columns:[
             {data: "changeID", name: "changeID", width: 200, type: "text"},
@@ -133,7 +136,7 @@ module.exports= function(app) {
     });
 
     app.get("/test/tDocSimpleTable1", function (req, res) {
-        res.sendFile(appViewsPath + '/test/tDocSimpleTable1.html');
+        res.sendFile(appViewsPath + '/test/testTDocSimpleTable1ip.html');
     });
     app.get("/test/tDocSimpleTable2wActions", function (req, res) {
         res.sendFile(appViewsPath + '/test/tDocSimpleTable2wActions.html');

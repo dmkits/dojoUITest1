@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/javascript" src="/jslib/dojoApp.js"></script>
+    <title>testRequest2getJSON</title>
+</head>
+<body class="claro">
+<page id="testRequest2getJSON_Page" design="headline"></page>
+</body>
+<script type="text/javascript">
+    $app.dev=true;
+    $app.startup("#testRequest2getJSON_Page",function() {                                                   log("START testRequest2getJSON_Page... this=",this,"$$=",$$);//!!!IT'S FOR TESTING!!!
+        var count= 0,
+                getJSON=function(url,msg){
+                    var msgCount=++count;
+                    $$.request.getJSON(url,function(data,error){                                            log("getJSON",msgCount,msg,"url=",url,"data=",data,"err=",error);
+                    });
+                },
+                getJSONP=function(params,msg){
+                    var msgCount=++count;
+                    $$.request.getJSON(params,function(data,error){                                        log("postJSON",msgCount,msg,"params:",params,"data=",data,"err=",error);
+                    });
+                };
+        getJSON("/test/1234567890","Err");
+        getJSONP({url:"/test/1234567890"},"Err");
+        getJSON("/test/1234567890","Err");
+        getJSONP({url:"/test/1234567890"},"Err");
+
+        getJSON("/test/testRequest1.html","Html");
+        getJSONP({url:"/test/testRequest1.html"},"Html");
+        getJSON("/test/testRequest1.html","Html");
+        getJSONP({url:"/test/testRequest1.html"},"Html");
+    });
+</script>
+</html>

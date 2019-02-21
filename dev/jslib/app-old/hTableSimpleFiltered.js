@@ -15,16 +15,16 @@ define(["dojo/_base/declare", "app/hTableSimple"], function(declare, HTableSimpl
         setHandsonTableFilterSettings: function () {
             if(this.useFilters!==true) return;
             var lblGlobalFilter= document.createElement("label"); this.globalFilter.label=lblGlobalFilter;
-            lblGlobalFilter.innerHTML="Фильтр по таблице:"; lblGlobalFilter.className = "changeTypeLbl";
+            lblGlobalFilter.innerHTML="Фильтр по таблице:"; lblGlobalFilter.className = "addedHeaderGlobalFilterLbl";
             var inputGlobalFilter = document.createElement("input"); this.globalFilter.input=inputGlobalFilter;
-            inputGlobalFilter.id = "inputGlobalFilter"; inputGlobalFilter.className = "changeTypeC";
+            inputGlobalFilter.id = "inputGlobalFilter"; inputGlobalFilter.className = "addedHeaderGlobalFilter";
             this.globalFilter.setGlobalFilter=function(value){
                 if(value!==null&&value.length>0){
                     this.value= value.trim();
-                    this.input.classList.add("changeTypeAccent"); this.label.classList.add("changeTypeAccent");
+                    this.input.classList.add("addedHeaderGlobalFilterInUse"); this.label.classList.add("addedHeaderGlobalFilterInUse");
                 } else {
                     this.value= null; this.input.value=null;
-                    this.input.classList.remove("changeTypeAccent"); this.label.classList.remove("changeTypeAccent");
+                    this.input.classList.remove("addedHeaderGlobalFilterInUse"); this.label.classList.remove("addedHeaderGlobalFilterInUse");
                 }
             };
             var thisGlobalFilter= this.globalFilter;
@@ -38,7 +38,7 @@ define(["dojo/_base/declare", "app/hTableSimple"], function(declare, HTableSimpl
                 }
             };
             var clearAllFiltersButton = document.createElement('BUTTON'); clearAllFiltersButton.id = "clearAllFiltersButton";
-            clearAllFiltersButton.innerHTML = "\u2612 Снять фильтры"; clearAllFiltersButton.className = "changeTypeC";
+            clearAllFiltersButton.innerHTML = "\u2612 Снять фильтры"; clearAllFiltersButton.className = "addedHeaderGlobalFilter";
             this.setAddingHeaderRow({"label":lblGlobalFilter, "input":inputGlobalFilter, "button":clearAllFiltersButton});
             var handsontableSettings= this.handsonTable.getSettings();
             var parent= this;
@@ -46,7 +46,7 @@ define(["dojo/_base/declare", "app/hTableSimple"], function(declare, HTableSimpl
                 if(parent.useFilters!=true) return "";
                 if(parent.htVisibleColumns&&parent.htVisibleColumns[colIndex]&&parent.htVisibleColumns[colIndex].useFilter===false) return "";
                 var filterButton = document.createElement('BUTTON');
-                filterButton.id = "filter_button_for_col_"+colIndex; filterButton.innerHTML = "\u25BC"; filterButton.className = "changeType";
+                filterButton.id = "filter_button_for_col_"+colIndex; filterButton.innerHTML = "\u25BC"; filterButton.className = "hTableColFilterBtn";
                 if (this.columns[colIndex]["filtered"]==true) filterButton.style.color = 'black'; else filterButton.style.color = '#bbb';
                 filterButton.setAttribute("colindex",colIndex);
                 return filterButton.outerHTML;
@@ -110,7 +110,7 @@ define(["dojo/_base/declare", "app/hTableSimple"], function(declare, HTableSimpl
 
                 if(!filterMenu) {
                     filterMenu = document.createElement('UL');
-                    filterMenu.id = "filter_menu"; filterMenu.className = "changeTypeMenu";
+                    filterMenu.id = "filter_menu"; filterMenu.className = "hTableColFilterMenu";
                     this.filterMenu = filterMenu; filterMenu.filterButton=button;
                     document.body.appendChild(filterMenu);
                     var menuBtnOkOnClick= function(filterMenu){

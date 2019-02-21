@@ -15,6 +15,11 @@
     </StackContainer>
 </LayoutContainer>
 <script type="text/javascript">                                                                             console.log("sysadmin database $$",$$);
+    $$.request.getJSONData({url:"/sysadmin/database/get1", condition:null, showRequestErrorDialog:false, data:{}, consoleLog:true},
+        function(result,error){
+                                console.log("/sysadmin/database/get1",result,error);
+        });
+
     var htDBCurrentChangesData={
         columns:[
             {data: "changeID", name: "changeID", width: 200, type: "text"},
@@ -33,6 +38,7 @@
     };
 //    $$.sadb_HTableDBCurrentChanges.updateContent(htDBCurrentChangesData);                     console.log("HTableDBCurrentChanges",$$.sadb_HTableDBCurrentChanges.getColumns(),$$.sadb_HTableDBCurrentChanges.getData());
                                                                                                             console.log("HTableDBCurrentChanges",$$.sadb_TDocDBCurrentChanges);
+
     $$.sadb_TDocDBCurrentChanges
             .setParams({titleText: "Data model current changes", dataURL: '/sysadmin/database/getCurrentChanges',buttonPrint: false, rightPane:{width:200}})
             .addTotalCountNumberBox("ИТОГО строк:", 140, {style: "font-weight:bold;", inputStyle: "width:40px;"})
@@ -51,11 +57,11 @@
                 }
             })
             .addToolPane({title:"apply changes"})
-            .addContentTableRowsAction("applyChangesRowData",{
-                startAction:function(contentTableRowsData, actionParams, startContentTableRowsAction){
+            .addContentTableAction("applyChangesRowData",{
+                startAction:function(contentTableRowsData, actionParams, startContentTableAction){
                     actionParams["finishedCounterByNoConnection"]=0;actionParams["finishedCounterByFailed"]=0;
                     if(actionParams.toolPanes&&actionParams.toolPanes[0]) actionParams.toolPanes[0].set("content","");
-                    startContentTableRowsAction();
+                    startContentTableAction();
                 },
                 tableRowAction:function(contentTableRowData, actionParams, contentTableUpdatedRowData, startNextAction, finishedAction){
                     var changeID = contentTableRowData.changeID;
@@ -65,7 +71,7 @@
                         return;
                     }
                     //if type == "new"
-                    $$.request.postJSONData({url: "/sysadmin/database/applyChange", condition: null, showRequestErrorDialog:false,
+                    $$.request.postJSONData({url:"/sysadmin/database/applyChange", condition:null, showRequestErrorDialog:false,
                                 data: {"CHANGE_ID": changeID, appliedDatetime:moment().format("YYYY.MM.DD HH:mm:ss")}, consoleLog: true },
                             function(result,error){
                                 var typeValue = type, changeMsg = null;
@@ -87,7 +93,7 @@
                                     actionParams["finishedCounterByNoConnection"]++;
                                     infoMsgByParams(actionParams);
                                     if(actionParams["finishedCounterByNoConnection"]>10) {
-                                        $$.dialogs.showSimple({dialogID:"errorDialog", title:"FAIL",
+                                        $$.dialogs.showSimple({id:"errorDialog", title:"FAIL",
                                             content:"No connection to the server!"+((error.message)?"<br>Reason:"+error.message:""),
                                             btnOkLabel:"Close", width:350, style:"text-align:center"});
                                         finishedAction();
@@ -130,10 +136,9 @@
             })
             .addToolPaneActionButton("Apply all changes",{ btnStyle:"width:160px", contentTableActionName:"applyChangesRowData"})
             .addContentTablePopupMenuAction("Apply selected changes...", {contentTableActionName:"applyChangesRowData"})
-            .addContentTablePopupMenuAction("Apply all changes...", {
-                contentTableActionName:"applyChangesRowData",
-                beforeContentTableRowsAction:function(selectedTableContent, actionParams, startContentTableRowsAction){
-                    startContentTableRowsAction(actionParams.thisInstance.getTableContent());
+            .addContentTablePopupMenuAction("Apply all changes...", {contentTableActionName:"applyChangesRowData",
+                beforeContentTableAction:function(selectedTableContent, actionParams, startContentTableAction){
+                    startContentTableAction(actionParams.thisInstance.getTableContent());
                 }
             });
     $$.sadb_TDocDBChangeLog

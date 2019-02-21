@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--<link rel="icon" type="image/gif" href="/icons/moda32x32.ico"/>-->
+    <![endif]-->
+    <script src="/jslib/handsontable-0.29.1/handsontable.full.min.js"></script>
+    <link rel="stylesheet" media="screen" href="/jslib/handsontable-0.29.1/handsontable.full.min.css">
+    <script src="/jslib/handsontable-0.29.1/numbro/languages/ru-RU.min.js"></script>
+    <script src="/jslib/numeral/languages/ru.js"></script>
+    <script src="/jslib/moment/moment-with-locales.js"></script>
+    <link rel="stylesheet" href="/jslib/dijit/themes/claro/claro.css" media="screen">
+    <script type="text/javascript" src="/jslib/dojo/dojo.js" data-dojo-config="async:true,parseOnLoad:false"></script>
+    <link rel="stylesheet" href="/css/htable.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="/css/sysadmin.css" media="screen">
+    <script type="text/javascript" src="/jslib/$$.js"></script>
+    <title>test1</title>
+</head>
+<body class="claro">
+<page id="sysadmin_Page" design="headline">
+    <BorderContainer id="sysadmin_TopContainer" region="top" design="sidebar" class="mainTopContent" gutters="true" style="height:63px; margin:0; padding:0">
+        <ContentPane id="sysadmin_TopImg" region="left" class="sysadmin_TopContent"></ContentPane>
+        <ContentPane id="sysadmin_TopStateInfo" region="top" class="sysadmin_TopContent">
+            <!--<div id="sysadmin_app_user" style="display:inline;"></div>-->
+            <div id="sysadmin_app_mode" style="display:inline;margin-left:20px;"></div>
+            <div id="sysadmin_ConnUserName" style="display:inline;;margin-left:20px;">1</div>
+            <div id="sysadmin_app_port" style="display:inline; margin-left:20px;"></div>
+            <div id="sysadmin_dbName" style="display:inline;;margin-left:20px;"></div>
+            <div id="sysadmin_db_sysadmin_name" style="display:inline;;margin-left:20px;"></div>
+            <div id="sysadmin_connectToDBState" style="display:inline;margin-left:20px;"></div>
+            <div id="sysadmin_modulesFailures" style="display:inline;margin-left:20px;"></div>
+            <div id="sysadmin_dbValidateState" style="display:inline;margin-left:20px;"></div>
+        </ContentPane>
+        <ContentPane id="sysadmin_TopActions" region="bottom" class="sysadmin_TopContent">
+            <StackController style="" containerId="sysadmin_ContentContainer"></StackController>
+
+            <ToggleButton id="sysadmin_btn1" iconClass="dijitCheckBoxIcon">ToggleButton1</ToggleButton>
+
+            <Button id="sysadmin_btnLogout" style="position:absolute;right:5px;">Logout</Button>
+        </ContentPane>
+    </BorderContainer>
+    <StackContainer id="sysadmin_ContentContainer" region="center" tabPosition="top" childIconClass="dijitCheckBoxIcon">
+        <InnerPage title="Startup config" iconClass="dijitCheckBoxIcon" href="/sysadmin/startupConfig">
+            <div>123</div>
+        </InnerPage>
+        <ContentPane title="Logs" iconClass="dijitCheckBoxIcon">
+            <div>123456</div>
+        </ContentPane>
+        <InnerPage id="sysadmin_ipDatabase" title="Database" iconClass="dijitCheckBoxIcon" href="/sysadmin/Database" style="margin:0;padding:0;"></InnerPage>
+        <InnerPage id="sysadmin_ipDatabaseNEW" title="Database NEW" iconClass="dijitCheckBoxIcon" href="/sysadmin/DatabaseNEW" style="margin:0;padding:0;"></InnerPage>
+    </StackContainer>
+</page>
+</body>
+<script type="text/javascript">
+    $$.startupPage("#sysadmin_Page",function() {                                                            console.log("START SYSADMIN PAGE...",this,$$);//!!!IT'S FOR TESTING!!!
+        $$.sysadmin_btnLogout.onClick=function(){                                                           console.log("sysadmin_btnLogout onClick");
+            window.location.replace(window.location.href);
+
+        };
+
+        $$.sysadmin_app_mode.innerText="APP MODE";                                                          console.log("sysadmin_app_mode",$$.sysadmin_app_mode);
+
+        $$.sysadmin_ContentContainer.selectChild($$.sysadmin_ipDatabase);
+    });
+</script>
+</html>

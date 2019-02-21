@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/javascript" src="/jslib/dojoApp.js"></script>
+    <title>testRequest3postJSON</title>
+</head>
+<body class="claro">
+<page id="testRequest3postJSON_Page" design="headline"></page>
+</body>
+<script type="text/javascript">
+    $app.dev=true;
+    $app.startup("#testRequest3postJSON_Page",function() {                                                  log("START testRequest3postJSON_Page... this=",this,"$$=",$$);//!!!IT'S FOR TESTING!!!
+        var count= 0,
+                postJSON=function(url,msg){
+                    var msgCount=++count;
+                    $$.request.postJSON(url,function(data,error){                                           log("postJSON",msgCount,msg,"url=",url,"data=",data,"err=",error);
+                    });
+                },
+                postJSONP=function(params,msg){
+                    var msgCount=++count;
+                    $$.request.postJSON(params,function(data,error){                                        log("postJSON",msgCount,msg,"params:",params,"data=",data,"err=",error);
+                    });
+                };
+        postJSON("/test/1234567890","Err");
+        postJSONP({url:"/test/1234567890"},"Err");
+        postJSON("/test/testRequest3postJSON.html","Html");
+        postJSONP({url:"/test/testRequest3postJSON.html"},"Html");
+
+        postJSONP({url:"/test/postUndef"},"");
+        postJSONP({url:"/test/post1"},"");
+        postJSONP({url:"/test/postNull"},"");
+        postJSONP({url:"/test/postNum0"},"");
+        postJSONP({url:"/test/postNum0123"},"");
+        postJSONP({url:"/test/postNumL"},"");
+
+        postJSONP({url:"/test/postStrE"},"");
+        postJSONP({url:"/test/postStr0"},"");
+        postJSONP({url:"/test/postStr1"},"");
+        postJSONP({url:"/test/postStrNumL"},"");
+
+        postJSONP({url:"/test/postDate"},"");
+
+        postJSONP({url:"/test/postJSONobjE"},"");
+        postJSONP({url:"/test/postJSONarrE"},"");
+
+        postJSONP({url:"/test/postJSONarrObjs"},"");
+    });
+</script>
+</html>

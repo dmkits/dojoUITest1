@@ -1,8 +1,9 @@
 define(["dijit/layout/LayoutContainer", "dijit/layout/ContentPane", "dijit/TitlePane",
         "dijit/form/Button","dijit/form/ToggleButton","dijit/form/ComboButton",
         "dijit/form/TextBox","dijit/form/NumberTextBox","dijit/form/DateTextBox",
+        "dijit/form/Select",
         "dijit/Menu", "dijit/MenuItem"],
-    function(LayoutContainer, ContentPane, TitlePane, Button,ToggleButton,ComboButton, TextBox,NumberTextBox,DateTextBox, Menu,MenuItem){
+    function(LayoutContainer, ContentPane, TitlePane, Button,ToggleButton,ComboButton, TextBox,NumberTextBox,DateTextBox, Select, Menu,MenuItem){
         return {
             printFormats: {
                 dateFormat:"DD.MM.YY", numericFormat:"#,###,###,###,##0.#########", currencyFormat:"#,###,###,###,##0.00#######"
@@ -149,130 +150,104 @@ define(["dijit/layout/LayoutContainer", "dijit/layout/ContentPane", "dijit/Title
                 var tableCell = this.addLeftCellToTableRow(tableRowNode, params.cellWidth, params.cellStyle);
                 return this.addButtonTo(tableCell, params);
             },
-            createInputTo: function(parent, label, labelStyle){
-                var labelTag;
-                if(label){
-                    labelTag = document.createElement("label"); labelTag.innerText=label+" ";
-                    if(labelStyle) labelTag.setAttribute("style",labelStyle);
-                    parent.appendChild(labelTag);
-                }
+            createInputTo: function(parent){
                 var tag = document.createElement("input");
-                //if (label) labelTag.setAttribute("for",tag.getAttribute("id"));
                 parent.appendChild(tag);
                 return tag;
             },
+            createLabelFor: function(dojoNode, label, labelStyle){
+                if(!dojoNode||!dojoNode.id||!label)return;
+                var labelTag=document.createElement("label"); labelTag.innerText=label+" ";
+                labelTag.setAttribute("for",dojoNode.id);
+                if(labelStyle) labelTag.setAttribute("style",labelStyle);
+                dojoNode.domNode.parentNode.insertBefore(labelTag,dojoNode.domNode);
+                return labelTag;
+            },
+
             /**
              * params= {labelText,labelStyle, inputStyle, cellWidth,cellStyle, initValueText, inputParams}
              */
             addTableCellTextBoxTo: function(tableRowNode, params){
                 if(!params) params={};
                 var tableCell = this.addLeftCellToTableRow(tableRowNode, params.cellWidth, params.cellStyle),
-                    inputTextBox= this.createInputTo(tableCell, params.labelText, params.labelStyle),
-                    textBoxParams={};
-                if(params.inputParams) textBoxParams=params.inputParams;
+                    textBoxParams=params.inputParams||{};
                 if(params.initValueText!==undefined) textBoxParams.value=params.initValueText;
                 if(params.inputStyle!==undefined) textBoxParams.style=params.inputStyle;
-                var textBox= new TextBox(textBoxParams,inputTextBox);
+                var textBox= new TextBox(textBoxParams,this.createInputTo(tableCell));
                 textBox.printParams={ cellWidth:params.cellWidth, cellStyle:params.cellStyle,
                     labelText:params.labelText, labelStyle:params.labelStyle, inputStyle:params.inputStyle };
+                this.createLabelFor(textBox, params.labelText, params.labelStyle);
                 return textBox;
             },
             /**
-             * params= {cellWidth, cellStyle, labelText || printLabel, labelStyle, inputParams, inputStyle, initValues}
+             * params= {cellWidth, cellStyle, labelText, printLabel, labelStyle, inputParams, inputStyle, initValues}
              */
             addTableCellNumberTextBoxTo: function(tableRowNode, params){
                 if(!params) params={};
                 var tableCell = this.addLeftCellToTableRow(tableRowNode, params.cellWidth, params.cellStyle),
-                    inputNumberTextBox= this.createInputTo(tableCell, params.labelText, params.labelStyle),
-                    numberTextBoxParams={};
-                if(params.inputParams) numberTextBoxParams=params.inputParams;
+                    numberTextBoxParams=params.inputParams||{};
                 if(params.initValue!==undefined) numberTextBoxParams.value= params.initValue;
                 if(params.inputStyle) numberTextBoxParams.style=params.inputStyle;
-                var numberTextBox= new NumberTextBox(numberTextBoxParams,inputNumberTextBox), printLabel;
+                var numberTextBox= new NumberTextBox(numberTextBoxParams,this.createInputTo(tableCell)), printLabel;
                 if(numberTextBoxParams.printLabel)printLabel=numberTextBoxParams.printLabel;
                 else if(params.labelText) printLabel=params.labelText;
                 numberTextBox.printParams={ cellWidth:params.cellWidth, cellStyle:params.cellStyle,
                     labelText:printLabel, labelStyle:params.labelStyle, inputStyle:params.inputStyle };
+                this.createLabelFor(numberTextBox, params.labelText, params.labelStyle);
                 return numberTextBox;
             },
             /**
              * params= {labelText,labelStyle, inputStyle, cellWidth,cellStyle, initValueDate, dateBoxParams}
              */
             addTableCellDateBoxTo: function(tableRowNode, params){
-                if (!params) params={};
+                if(!params) params={};
                 var tableCell = this.addLeftCellToTableRow(tableRowNode, params.cellWidth, params.cellStyle),
-                    inputDateBox= this.createInputTo(tableCell, params.labelText, params.labelStyle), dateBoxParams={};
-                if(params.dateBoxParams) dateBoxParams=params.dateBoxParams;
+                    dateBoxParams=params.dateBoxParams||{};
                 if(params.initValueDate!==undefined) dateBoxParams.value= params.initValueDate;
                 dateBoxParams.style= "width:85px";
                 if(params.inputStyle) dateBoxParams.style=params.inputStyle;
-                var dateTextBox=new DateTextBox(dateBoxParams,inputDateBox);
-                this.addPreviousDayBtn(tableCell,dateTextBox);
-                this.addNextDayBtn(tableCell,dateTextBox);
+                var dateTextBox=new DateTextBox(dateBoxParams, this.createInputTo(tableCell));
                 dateTextBox.printParams={ cellWidth:params.cellWidth, cellStyle:params.cellStyle,
                     labelText:params.labelText, labelStyle:params.labelStyle, inputStyle:params.inputStyle };
-                return  dateTextBox;
+                this.createLabelFor(dateTextBox, params.labelText, params.labelStyle);
+                this.addTableCellDateBoxBtn(tableCell,dateTextBox,"prev");this.addTableCellDateBoxBtn(tableCell,dateTextBox,"next");
+                return dateTextBox;
             },
-            addPreviousDayBtn:function(tableCell,dateTextBox){
-                var previousDayBtn = document.createElement('BUTTON');
-                previousDayBtn.setAttribute("id","previousDayBtnFor"+dateTextBox.id);
-                previousDayBtn.className = "dijitReset dijitButtonNode";
-                previousDayBtn.style.width = "18px"; previousDayBtn.style.height = "18px";
-                previousDayBtn.style.border="solid 1px #b5bcc7";
-                previousDayBtn.style.color="#b5bcc7";
-                previousDayBtn.innerText= "\u25c4";
-                tableCell.insertBefore(previousDayBtn, tableCell.lastChild);
-                previousDayBtn.onclick=function(){
-                    if(dateTextBox.get("disabled")) return;
-                    var newDate=moment(new Date(dateTextBox.value)).subtract(1, 'days');
-                    dateTextBox.set("displayedValue",newDate.format("DD.MM.YYYY"));
-                };
-            },
-            addNextDayBtn:function(tableCell,dateTextBox){
-                var nextDayBtn = document.createElement('BUTTON');
-                nextDayBtn.setAttribute("id","nextDayBtn"+dateTextBox.id);
-                nextDayBtn.className = "dijitReset dijitButtonNode";
-                nextDayBtn.style.width = "18px";
-                nextDayBtn.style.height = "18px";
-                nextDayBtn.style.border="solid 1px #b5bcc7";
-                nextDayBtn.style.color="#b5bcc7";
-                nextDayBtn.innerText= "\u25ba";
-                tableCell.appendChild(nextDayBtn);
-                nextDayBtn.onclick=function(){
-                    if (dateTextBox.get("disabled")) return;
-                    var newDate=moment(new Date(dateTextBox.value)).add(1, 'days');
-                    dateTextBox.set("displayedValue",newDate.format("DD.MM.YYYY"));
-                };
-            },
+            addTableCellDateBoxBtn:function(tableCell,dateTextBox,btnType){
+                var btnForDateBox = document.createElement('BUTTON');
+                //btnForDateBox.setAttribute("id","previousDayBtnFor"+dateTextBox.id);
+                btnForDateBox.className = "dijitReset dijitButtonNode";
+                btnForDateBox.style.width = "18px"; btnForDateBox.style.height = "18px";
+                btnForDateBox.style.border="solid 1px #b5bcc7"; btnForDateBox.style.color="#b5bcc7";
+                if(btnType=="prev"){
+                    btnForDateBox.innerText= "\u25c4";btnForDateBox.increment=-1;
+                    tableCell.insertBefore(btnForDateBox, tableCell.lastChild);
 
-            addTableInputTo: function(tableRowNode, params){
-                if (!params) params={};
-                //if (!params.inputStyle) params.inputStyle="";
-                //if (!params.style) params.style="";
-                var tableCell= this.addLeftCellToTableRow(tableRowNode, params.cellWidth, params.cellStyle);
-                var input= this.createInputTo(tableCell, params.labelText/*, params.labelStyle*/);
-                //var select= APP.instanceFor(input, Select,
-                //    {style:params.inputStyle+params.style, labelDataItem:params.labelDataItem,loadDropDownURL:params.loadDropDownURL,
-                //        /*it's for print*/cellWidth:cellWidth, labelText:label, printStyle:params.style, inputStyle:params.inputStyle });
-                //this.detailHeader.addControlElementObject(select, itemName);
-                //this.addDetailHeaderElement(false,select);
-                return input;
+                }else if(btnType=="next"){
+                    btnForDateBox.innerText= "\u25ba";btnForDateBox.increment=1;
+                    tableCell.appendChild(btnForDateBox);
+                }
+                btnForDateBox.onclick=function(){
+                    if(dateTextBox.get("disabled")||!this.increment) return;
+                    var newDate=moment(new Date(dateTextBox.value)).add(this.increment, 'days');
+                    dateTextBox.set("displayedValue",newDate.format("DD.MM.YYYY"));
+                };
+
             },
+            /**
+             * params= {labelText,labelStyle, selectStyle, cellWidth,cellStyle, selectParams}
+             */
             addTableCellSelectTo: function(tableRowNode, params){
-                if (!params) params={};
-                var tableCell = this.addLeftCellToTableRow(tableRowNode, params.cellWidth, params.cellStyle);
-                var inputDateBox= this.createInputTo(tableCell, params.labelText, params.labelStyle);
-                var selectParams={};
-                if (params.selectParams) selectParams=params.selectParams;
-                //if (params.initValueDate!==undefined) dateBoxParams.value= params.initValueDate;
+                if(!params) params={};
+                var tableCell = this.addLeftCellToTableRow(tableRowNode, params.cellWidth, params.cellStyle),
+                    selectParams=params.selectParams||{};
                 selectParams.style= "width:180px";
-                if (params.inputStyle) selectParams.style=params.inputStyle;
-                var select=new Select(selectParams,inputDateBox);
-                this.addPreviousDayBtn(tableCell,select);
-                this.addNextDayBtn(tableCell,select);
+                if(params.selectStyle) selectParams.style=params.selectStyle;
+                var select=new Select(selectParams,this.createInputTo(tableCell));
                 select.printParams={ cellWidth:params.cellWidth, cellStyle:params.cellStyle,
                     labelText:params.labelText, labelStyle:params.labelStyle, inputStyle:params.inputStyle };
-                return  select;
+                this.createLabelFor(select, params.labelText, params.labelStyle);
+                return select;
             },
 
             addChildTitlePaneTo: function(parent, params, style){

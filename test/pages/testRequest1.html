@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>testRequest1</title>
+</head>
+<body class="claro">
+<page id="testRequest1_Page" design="headline"></page>
+</body>
+<script type="text/javascript" src="/jslib/dojoApp.js"></script>
+<script type="text/javascript">
+    $app.dev=true;
+    $app.startup("#testRequest1_Page",function() {                                                          log("START testRequest1_Page... this=",this,"$$=",$$);//!!!IT'S FOR TESTING!!!
+        var count= 0,
+                getJSON=function(url,msg){
+
+
+                    var msgCount=++count;
+                    $$.request.getJSON(url,function(data,error){                                            log("getJSON",msgCount,msg,"url=",url,"data=",data,"err=",error);
+                    });
+                },
+                postJSON=function(url,msg){
+                    var msgCount=++count;
+                    $$.request.postJSON(url,function(data,error){                                           log("postJSON",msgCount,msg,"url=",url,"data=",data,"err=",error);
+                    });
+                };
+        getJSON("/test/1234567890","Err");
+        postJSON("/test/1234567890","Err");
+
+        getJSON("/test/testRequest1.html","Html");
+        postJSON("/test/testRequest1.html","Html");
+    });
+</script>
+</html>

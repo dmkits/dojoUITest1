@@ -8,11 +8,11 @@
     <script src="/jslib/handsontable-0.29.1/numbro/languages/ru-RU.min.js"></script>
     <script src="/jslib/numeral/languages/ru.js"></script>
     <script src="/jslib/moment/moment-with-locales.js"></script>
-    <link rel="stylesheet" href="/jslib/dijit/themes/claro/claro.css" media="screen">
-    <script type="text/javascript" src="/jslib/dojo/dojo.js" data-dojo-config="async:true,parseOnLoad:false"></script>
+    <!--<link rel="stylesheet" href="/jslib/dijit/themes/claro/claro.css" media="screen">-->
+    <!--<script type="text/javascript" src="/jslib/dojo/dojo.js" data-dojo-config="async:true,parseOnLoad:false"></script>-->
     <link rel="stylesheet" href="/css/htable.css" media="screen">
     <link rel="stylesheet" type="text/css" href="/css/sysadmin.css" media="screen">
-    <script type="text/javascript" src="/jslib/$$.js"></script>
+    <script type="text/javascript" src="/jslib/dojoApp.js"></script>
 </head>
 <body class="claro">
 <page id="sysadmin_Page" design="headline">
@@ -50,7 +50,7 @@
 </page>
 </body>
 <script type="text/javascript">
-    $$.startupPage("#sysadmin_Page",function() {                                                            console.log("START SYSADMIN PAGE...",this,$$);//!!!IT'S FOR TESTING!!!
+    app.startupPage("#sysadmin_Page",function() {                                                           console.log("START SYSADMIN PAGE...",this,$$);//!!!IT'S FOR TESTING!!!
         $$.sysadmin_btnLogout.onClick=function(){                                                           console.log("sysadmin_btnLogout onClick");
             window.location.replace(window.location.href);
 

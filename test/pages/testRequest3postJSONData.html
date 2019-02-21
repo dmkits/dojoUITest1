@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/javascript" src="/jslib/dojoApp.js"></script>
+    <title>testRequest3postJSONData</title>
+</head>
+<body class="claro">
+<page id="testRequest3postJSONData_Page" design="headline">
+    <ContentPane id="cp1" region="center" class="sysadmin_TopContent">
+        <button id="btnDoPostJSONData">Do post JSON data</button>
+    </ContentPane>
+</page>
+</body>
+<script type="text/javascript">
+    $app.dev=true;
+    $app.startup("#testRequest3postJSONData_Page",function() {                                              log("START testRequest3postJSONData_Page... this=",this,"$$=",$$);//!!!IT'S FOR TESTING!!!
+        var count= 0,
+                postJSONData=function(url,msg){
+                    var msgCount=++count;
+                    $$.request.postJSONData(url,function(data,error){                                       log("postJSONData",msgCount,msg,"url=",url,"data=",data,"err=",error);
+                    });
+                },
+                postJSONDataP=function(params,msg){
+                    var msgCount=++count;
+                    $$.request.postJSONData(params,function(data,error){                                    log("postJSONData",msgCount,msg,"params:",params,"data=",data,"err=",error);
+                    });
+                };
+        var doPostJSONData=function(){
+            postJSONData("/test/1234567890","Err");
+            postJSONDataP({url:"/test/1234567890"},"Err");
+            postJSONData("/test/testRequest3postJSON.html","Html");
+            postJSONDataP({url:"/test/testRequest3postJSON.html"},"Html");
+
+            postJSONDataP({url:"/test/postUndef"},"");
+            postJSONDataP({url:"/test/post1"},"");
+            postJSONDataP({url:"/test/postNull"},"");
+            postJSONDataP({url:"/test/postNum0"},"");
+            postJSONDataP({url:"/test/postNum0123"},"");
+            postJSONDataP({url:"/test/postNumL"},"");
+
+            postJSONDataP({url:"/test/postStrE"},"");
+            postJSONDataP({url:"/test/postStr0"},"");
+            postJSONDataP({url:"/test/postStr1"},"");
+            postJSONDataP({url:"/test/postStrNumL"},"");
+
+            postJSONDataP({url:"/test/postDate"},"");
+
+            postJSONDataP({url:"/test/postJSONobjE"},"");
+            postJSONDataP({url:"/test/postJSONarrE"},"");
+
+            postJSONDataP({url:"/test/postJSONarrObjs"},"");
+        };
+        $$.btnDoPostJSONData.$.click(function(){
+            doPostJSONData();
+        });
+    });
+</script>
+</html>

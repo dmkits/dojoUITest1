@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/javascript" src="/jslib/dojoApp.js"></script>
+    <title>testRequest2getJSONData</title>
+</head>
+<body class="claro">
+<page id="testRequest2getJSONData_Page" design="headline">
+    <ContentPane id="cp1" region="center" class="sysadmin_TopContent">
+        <button id="btnDoGetJSONData">Do get JSON data</button>
+    </ContentPane>
+</page>
+</body>
+<script type="text/javascript">
+    $app.dev=true;
+    $app.startup("#testRequest2getJSONData_Page",function() {                                               log("START testRequest2getJSONData_Page... this=",this,"$$=",$$);//!!!IT'S FOR TESTING!!!
+        var count= 0,
+                getJSONData=function(url,msg){
+                    var msgCount=++count;
+                    $$.request.getJSONData(url,function(data,error){                                        log("getJSONData",msgCount,msg,"url=",url,"data=",data,"err=",error);
+                    });
+                },
+                getJSONDataP=function(params,msg){
+                    var msgCount=++count;
+                    $$.request.getJSONData(params,function(data,error){                                     log("getJSONData",msgCount,msg,"params:",params,"data=",data,"err=",error);
+                    });
+                };
+        var doPostJSONData=function(){
+            getJSONData("/test/1234567890","Err");
+            getJSONDataP({url:"/test/1234567890"},"Err");
+            getJSONData("/test/testRequest3postJSON.html","Html");
+            getJSONDataP({url:"/test/testRequest3postJSON.html"},"Html");
+
+            getJSONDataP({url:"/test/getUndef"},"");
+            getJSONDataP({url:"/test/get1"},"");
+            getJSONDataP({url:"/test/getNull"},"");
+            getJSONDataP({url:"/test/getNum0"},"");
+            getJSONDataP({url:"/test/getNum0123"},"");
+            getJSONDataP({url:"/test/getNumL"},"");
+
+            getJSONDataP({url:"/test/getStrE"},"");
+            getJSONDataP({url:"/test/getStr0"},"");
+            getJSONDataP({url:"/test/getStr1"},"");
+            getJSONDataP({url:"/test/getStrNumL"},"");
+
+            getJSONDataP({url:"/test/getDate"},"");
+
+            getJSONDataP({url:"/test/getJSONobjE"},"");
+            getJSONDataP({url:"/test/getJSONarrE"},"");
+
+            getJSONDataP({url:"/test/getJSONarrObjs"},"");
+        };
+        $$.btnDoGetJSONData.$.click(function(){
+            doPostJSONData();
+        });
+    });
+</script>
+</html>

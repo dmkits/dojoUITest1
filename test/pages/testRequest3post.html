@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/javascript" src="/jslib/dojoApp.js"></script>
+    <title>testRequest3post</title>
+</head>
+<body class="claro">
+<page id="testRequest3post_Page" design="headline"></page>
+</body>
+<script type="text/javascript">
+    $app.dev=true;
+    $app.startup("#testRequest3post_Page1",function() {                                                     log("START testRequest3post_Page... this=",this,"$$=",$$);//!!!IT'S FOR TESTING!!!
+        var count= 0,
+            postData=function(url,msg){
+                var msgCount=++count;
+                $$.request.postData(url,function(data,error){                                               log("postData",msgCount,msg,"url=",url,"data=",data,"err=",error);
+                });
+            },
+            postDataP=function(params,msg){
+                var msgCount=++count;
+                $$.request.postData(params,function(data,error){                                            log("postData",msgCount,msg,"params:",params,"data=",data,"err=",error);
+                });
+            };
+
+        postData("/test/1234567890","Err");
+        postDataP({url:"/test/1234567890"},"Err");
+        postData("/test/testRequest2post.html","Html");
+        postDataP({url:"/test/testRequest2post.html"},"Html");
+
+        postDataP({url:"/test/postUndef"},"");
+        postDataP({url:"/test/post1"},"");
+        postDataP({url:"/test/postNull"},"");
+        postDataP({url:"/test/postNum0"},"");
+        postDataP({url:"/test/postNum0123"},"");
+        postDataP({url:"/test/postNumL"},"");
+
+        postDataP({url:"/test/postStrE"},"");
+        postDataP({url:"/test/postStr0"},"");
+        postDataP({url:"/test/postStr1"},"");
+        postDataP({url:"/test/postStrNumL"},"");
+
+        postDataP({url:"/test/postDate"},"");
+
+        postDataP({url:"/test/postJSONobjE"},"");
+        postDataP({url:"/test/postJSONarrE"},"");
+
+        postDataP({url:"/test/postJSONarrObjs"},"");
+    });
+</script>
+</html>
