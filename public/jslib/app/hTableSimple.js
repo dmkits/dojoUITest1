@@ -518,58 +518,51 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                 }
                 return rowData;
             },
+            updateRowsActionDialog: function(actionParams,progressMaximum){                                            console.log("updateRowsActionDialog",actionParams,actionParams.progressDialogContentHeight);
+                return Dialogs.showProgress({id:this.id + "_progressBarForDialog", title:"Выполнение операции",
+                    width:530, contentHeight:actionParams.progressDialogContentHeight,
+                    btnOkLabel:"Закрыть", btnStopLabel:"Остановить", progressMaximum:progressMaximum});
+            },
             /**
              * actionParams = {}, parameters values for use in actionFunction and finishedAction
              * actionFunction = function(rowData, actionParams, updatedRowData, nextAction, finishedAction)
-             * nextAction = function(true/false) if false restart current action
-             * finishedAction = function(rowsData, actionParams)
+             *      nextAction = function(true/false) -call in actionFunction for start next action, if parameter false restart current action
+             * finishedAction = function(rowsData, actionParams) -call if process finished or stopped by user,
+             *      actionParams.progressStopped=true if process stopped by user
+             *      actionParams.progressFinished=true if process finished (no stopped by user)
              * actionParams.progressDialog - dialog of action progress
              * actionParams.progressDialogContentHeight - messages content height in process dialog
-             * actionParams.progressDialog.addMsg(msg) - added message to dialog
+             * actionParams.progressDialog.start({ title, contentHeight, progressMaximum, message }) - start process dialog
+             * actionParams.progressDialog.addMsg(msg,contentHeight) - added message to dialog, contentHeight if exists set dialog content height
              * actionParams.progressDialog.setMsg(msg) - set last message in dialog
+             * actionParams.progressCounter - operation counter
              */
             updateRowsAction: function(rowsData, actionParams, actionFunction, finishedAction){
                 if(!actionParams)actionParams={};
-                actionParams.progressDialog=
-                    Dialogs.showProgress({id:this.id + "_progressBarForDialog", title:"Выполнение операции",
-                        width:500, contentHeight:actionParams.progressDialogContentHeight,
-                        btnOkLabel:"Закрыть", btnStopLabel:"Остановить", progressMaximum:rowsData.length});
-
-                //if(actionParams.dlgActionMessage) actionParams.progressDialog.setProgress(ind+1,actionParams.dlgActionMessage);
-                //actionParams.dlgActionMessage=null;
-
+                if(!actionParams.progressDialogStoppedMessage)actionParams.progressDialogStoppedMessage="Операция остановлена!";
+                if(!actionParams.progressDialog)actionParams.progressDialog=this.updateRowsActionDialog(actionParams,rowsData.length);
+                actionParams.progressStopped=false;actionParams.progressFinished=false;
                 this.updateRowsActionCallback(this, rowsData, 0, actionParams, actionFunction,
                     /*finishedAction*/function(rowsData, actionParams){
-                        //if(actionParams.progressDialog) actionParams.progressDialog.hide();
                         if(actionFunction)finishedAction(rowsData, actionParams);
                     });
             },
             updateRowsActionCallback: function(tableInstance, rowsData, ind, actionParams, actionFunction, finishedAction){
                 var rowData=rowsData[ind];
                 if(!rowData||actionParams.progressDialog.progressStopped){
-                    actionParams.progressDialog.enableClose();
-                    if(actionParams.progressDialog.progressStopped)actionParams.progressDialog.addMsg("Операция остановлена!");
-                    if(finishedAction) setTimeout(function(){ finishedAction(rowsData, actionParams); },1);
+                    if(actionParams.progressDialog.progressStopped) actionParams.progressStopped=true;
+                    else{
+                        actionParams.progressFinished=true; actionParams.progressDialog.setFinished();
+                    }
+                    if(finishedAction) setTimeout(function(){ finishedAction(rowsData, actionParams); },10);
                     else tableInstance.updateRowData(rowData, {}, {callUpdateContent:true});
                     return;
                 }
-
-                //var rowDataMsg="";
-                //if(rowData)rowDataMsg+="код: "+rowData["ProdID"]+" товар: "+rowData["ProdName"]+" пересписан успешно.";
-                //actionParams.progressDialog.setProgress(ind+1,ind+1+")");
-
+                actionParams.progressCounter=ind+1; actionParams.progressDialog.setProgress(actionParams.progressCounter);
                 var updatedRowData={};
-                actionParams.progressDialog.setProgress(ind+1);
                 actionFunction(rowData, actionParams, updatedRowData,
                     /*nextAction*/function(next){
-
-                        var rowDataMsg="";
-                        if(rowData)rowDataMsg+="код: "+rowData["ProdID"]+" товар: "+rowData["ProdName"]+" пересписан успешно.";
-
-                        //actionParams.progressDialog.setProgress(ind+1);
-
                         var indNext=(next===false)?ind:ind+1;
-
                         tableInstance.updateRowData(rowData, updatedRowData, {selectUpdateRow:true,callUpdateContent:false});
                         setTimeout(function(){
                             tableInstance.updateRowsActionCallback(tableInstance, rowsData, indNext, actionParams, actionFunction, finishedAction);

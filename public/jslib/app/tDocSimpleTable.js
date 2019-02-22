@@ -60,13 +60,13 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 if (params.wordWrap===undefined) params.wordWrap=true;
                 if (params.useFilters===undefined) params.useFilters=true;
                 if (params.allowFillHandle===undefined) params.allowFillHandle=false;
-                this.addChild(this.contentTable=new HTable(params));
+                this.addChild(this.contentHTable=new HTable(params));
                 var instance = this;
-                this.contentTable.onUpdateContent = function(){
+                this.contentHTable.onUpdateContent = function(){
                     if(!this.getSelectedRow()) this.setSelectedRowByIndex(0);
                     instance.onUpdateTableContent();
                 };
-                this.contentTable.onSelect = function(firstSelectedRowData, selection){
+                this.contentHTable.onSelect = function(firstSelectedRowData, selection){
                     this.setSelection(firstSelectedRowData, selection);
                     instance.onSelectTableContent(firstSelectedRowData, selection);
                 };
@@ -114,19 +114,19 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 if(additionalConditions)
                     for(var addConditionItemName in additionalConditions)
                         conditions[addConditionItemName.replace("=","~")]=additionalConditions[addConditionItemName];
-                this.contentTable.setContentFromUrl({url:this.dataURL,conditions:conditions, clearContentBeforeLoad:true});
+                this.contentHTable.setContentFromUrl({url:this.dataURL,conditions:conditions, clearContentBeforeLoad:true});
             },
             reloadTableContentByCondition: function(additionalCondition){                                   //console.log("TDocSimpleTable reloadTableContentByCondition condition=",condition);
                 this.loadTableContent(additionalCondition);
             },
             getTableContent: function(){
-                return this.contentTable.getContent();
+                return this.contentHTable.getContent();
             },
             getTableContentSelectedRow: function(){
-                return this.contentTable.getSelectedRow();
+                return this.contentHTable.getSelectedRow();
             },
             getTableContentItemSum: function(tableItemName){
-                return this.contentTable.getContentItemSum(tableItemName);
+                return this.contentHTable.getContentItemSum(tableItemName);
             },
             onUpdateTableContent: function(){
                 if(!this.totals) return;
@@ -240,7 +240,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 var btn= $TDF.addTableCellButtonTo(this.topTableRow, {labelText:labelText, cellWidth:width, cellStyle:"text-align:right;"});
                 var instance= this;
                 btn.onClick = function(){
-                    if (onClickAction) onClickAction(instance.getTableContent(),instance.contentTable);
+                    if (onClickAction) onClickAction(instance.getTableContent(),instance.contentHTable);
                 };
                 return this;
             },
@@ -360,9 +360,9 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
             /**
              * params = { title, width, contentTableAction }
              * params.contentTableAction = function(params)
-             * params.contentTableAction calls on this.contentTable select row, or updated table content
-             *  contentTableAction.params = { thisToolPane, contentTable:<this.ContentTable>, instance:<this>,
-             *      contentTableSelectedRow:<this.contentTable.getSelectedRow()> }
+             * params.contentTableAction calls on this.contentHTable select row, or updated table content
+             *  contentTableAction.params = { thisToolPane, contentHTable:<this.ContentTable>, instance:<this>,
+             *      contentTableSelectedRow:<this.contentHTable.getSelectedRow()> }
              */
             addToolPane: function(params){
                 if(!this.rightContainer){
@@ -384,8 +384,8 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 for(var i = 0; i < this.toolPanes.length; i++){
                     var toolPane = this.toolPanes[i];
                     if(!toolPane.contentTableAction) continue;
-                    if(!firstSelectedRowData) firstSelectedRowData=this.contentTable.getSelectedRow();
-                    toolPane.contentTableAction({thisToolPane:toolPane, contentTable:this.contentTable, instance:this,
+                    if(!firstSelectedRowData) firstSelectedRowData=this.contentHTable.getSelectedRow();
+                    toolPane.contentTableAction({thisToolPane:toolPane, contentHTable:this.contentHTable, instance:this,
                         contentTableSelectedRow:firstSelectedRowData});
                 }
             },
@@ -395,9 +395,9 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 return this;
             },
             /**
-             * tableRowAction = function(contentTableRowData, actionParams, contentTableUpdatedRowData, startNextAction, finishedAction)
+             * tableRowAction = function(contentHTableRowData, actionParams, contentHTableUpdatedRowData, startNextAction, finishedAction)
              *      startNextAction = function(true/false), if false- restart current action
-             *      actionParams = { tableInstance, toolPanes, thisInstance }
+             *      actionParams = { contentHTable, toolPanes, thisDoc, progressDialog }
              */
             addContentTableRowAction: function(actionName, tableRowAction){
                 if(!this.contentTableActions) this.contentTableActions={};
@@ -406,12 +406,12 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
             },
             /**
              * actions = { action } || actions = { startAction, tableRowAction, endAction }
-             *      action = function(contentTableRowsData, actionParams)
-             *      startAction = function(contentTableRowsData, actionParams, startTableRowActions)
-             *      tableRowAction = function(contentTableRowData, actionParams, contentTableUpdatedRowData, startNextAction, finishedAction)
+             *      action = function(contentHTableRowsData, actionParams)
+             *      startAction = function(contentHTableRowsData, actionParams, startTableRowActions)
+             *      tableRowAction = function(contentHTableRowData, actionParams, contentHTableUpdatedRowData, startNextAction, finishedAction)
              *          startNextAction = function(true/false), if false- repeat current row action
-             *      endAction = function(contentTableRowsData, actionParams)
-             *      actionParams = { contentTableInstance, toolPanes, thisInstance }
+             *      endAction = function(contentHTableRowsData, actionParams)
+             *      actionParams = { contentHTable, toolPanes, thisDoc, progressDialog }
              */
             addContentTableAction: function(actionName, actions){
                 if(!actions) return this;
@@ -423,7 +423,9 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 };
                 return this;
             },
+            getContentTableActionByName: function(actionName){
 
+            },
             /**
              * actionParams = { btnStyle, btnParams, contentTableActionName, beforeContentTableAction, actionFunction }
              *      actionFunction = function(actionParams)
@@ -443,7 +445,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 var actionButton= $TDF.addTableCellButtonTo(actionsTableRow, {labelText:label, cellWidth:0,
                     btnStyle:actionParams.btnStyle, btnParameters:actionParams.btnParams});
                 if(!this.toolPanesActionButtons) this.toolPanesActionButtons={};
-                var actionFunctionParams={contentTableInstance:this.contentTable, toolPanes:this.toolPanes, thisInstance:this,
+                var actionFunctionParams={contentTableInstance:this.contentHTable, toolPanes:this.toolPanes, thisInstance:this,
                     contentTableRowsData:this.getTableContent()};
                 if(actionParams.actionFunction){
                     actionButton.onClick=function(){
@@ -459,13 +461,13 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                     contentTableRowsActionFunction= function(tableContentForAction,actionParams){
                         contentTableRowAction.startActionFunction(tableContentForAction, actionParams,
                             /*startContentTableAction*/function(){
-                                thisInstance.contentTable.updateRowsAction(tableContentForAction, actionParams,
+                                thisInstance.contentHTable.updateRowsAction(tableContentForAction, actionParams,
                                     contentTableRowAction.tableRowActionFunction, contentTableRowAction.endActionFunction);
                             });
                     };
                 }else if(contentTableRowAction&&contentTableRowAction.tableRowActionFunction){
                     contentTableRowsActionFunction= function(tableContentForAction,actionParams){
-                        thisInstance.contentTable.updateRowsAction(tableContentForAction, actionParams,
+                        thisInstance.contentHTable.updateRowsAction(tableContentForAction, actionParams,
                             contentTableRowAction.tableRowActionFunction, contentTableRowAction.endActionFunction);
                     };
                 }
@@ -488,41 +490,42 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
             },
 
             /**
-             * actionParams = { btnStyle, btnParams, actionFunction, contentTableActionName, beforeContentTableAction }
+             * actionParams = { actionFunction, contentTableActionName, beforeContentTableAction }
              *      actionFunction = function(selectedTableContent, actionParams)
              *      beforeContentTableAction = function(selectedTableContent, actionParams, startContentTableAction)
-             *          actionParams = { contentTableInstance, toolPanes, thisInstance }
+             *          actionParams = { contentHTable, toolPanes, thisDoc, progressDialog }
              *          startContentTableAction= function(contentTableRowsDataForAction)
              */
-            addContentTablePopupMenuAction: function(itemName, actionParams){
-                var thisInstance=this, thisContentTable= this.contentTable;
-                if(!actionParams) actionParams={};
-                actionParams.contentTableInstance=thisContentTable;
-                actionParams.toolPanes=thisInstance.toolPanes;
-                actionParams.thisInstance=thisInstance;
-                var menuItemActionFunction;
-                if(actionParams.actionFunction){
-                    menuItemActionFunction= actionParams.actionFunction;
+            addContentTablePopupMenuAction: function(itemName, popupMenuActionParams){
+                if(!popupMenuActionParams) {
+                    console.error("tDocSimpleTable.addContentTablePopupMenuAction Failed! Reason:No popup menu parameters!"); return this;
+                }
+                var self=this, menuItemActionFunction;
+                if(popupMenuActionParams.actionFunction){
+                    menuItemActionFunction= popupMenuActionParams.actionFunction;
                 }else{
-                    var contentTableRowAction= this.contentTableActions[actionParams.contentTableActionName];
+                    var contentTableRowAction= this.contentTableActions[popupMenuActionParams.contentTableActionName];
                     var contentTableRowsActionFunction;
                     if(contentTableRowAction&&contentTableRowAction.startActionFunction&&contentTableRowAction.tableRowActionFunction){
                         contentTableRowsActionFunction=function(rowsDataForAction, actionParams){
+                            actionParams.progressDialog=actionParams.contentHTable.updateRowsActionDialog(actionParams,rowsDataForAction.length);
                             contentTableRowAction.startActionFunction(rowsDataForAction, actionParams,
                                 /*startContentTableAction*/function(){
-                                    thisInstance.contentTable.updateRowsAction(rowsDataForAction, actionParams,
+                                    self.contentHTable.updateRowsAction(rowsDataForAction, actionParams,
                                         contentTableRowAction.tableRowActionFunction, contentTableRowAction.endActionFunction);
                                 });
                         };
                     }else if(contentTableRowAction&&contentTableRowAction.tableRowActionFunction){
                         contentTableRowsActionFunction=function(rowsDataForAction, actionParams){
-                            thisInstance.contentTable.updateRowsAction(rowsDataForAction, actionParams,
+                            actionParams.progressDialog=actionParams.contentHTable.updateRowsActionDialog(actionParams,rowsDataForAction.length);
+                            self.contentHTable.updateRowsAction(rowsDataForAction, actionParams,
                                 contentTableRowAction.tableRowActionFunction, contentTableRowAction.endActionFunction);
                         }
                     }
-                    if(actionParams.beforeContentTableAction){
+                    if(popupMenuActionParams.beforeContentTableAction){
                         menuItemActionFunction= function(rowsDataForAction, actionParams){
-                            actionParams.beforeContentTableAction(rowsDataForAction, actionParams,
+                            actionParams.progressDialog=actionParams.contentHTable.updateRowsActionDialog(actionParams,rowsDataForAction.length);
+                            popupMenuActionParams.beforeContentTableAction(rowsDataForAction, actionParams,
                                 function(contentTableRowsDataForAction){
                                     if(!contentTableRowsDataForAction) contentTableRowsDataForAction=rowsDataForAction;
                                     if(contentTableRowsActionFunction)
@@ -533,12 +536,19 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                         menuItemActionFunction= contentTableRowsActionFunction;
                     }
                 }
-                if(!menuItemActionFunction) return this;
-                thisContentTable.setMenuItem(itemName, actionParams,
-                    /*menuItemAction*/function(selRowsData, actionParams){
+                if(!menuItemActionFunction) {
+                    console.error("tDocSimpleTable.addContentTablePopupMenuAction Failed! Reason: popup menu parameters no correct for set menu action function!");
+                    return this;
+                }
+                var thisContentHTable= this.contentHTable,
+                    menuItemParams={contentHTable:thisContentHTable,toolPanes:this.toolPanes,thisDoc:this};
+                thisContentHTable.setMenuItem(itemName, menuItemParams,
+                    /*menuItemAction*/function(selRowsData, menuItemParams){
                         var rowsDataForAction=[];
                         for(var selInd in selRowsData) rowsDataForAction.push(selRowsData[selInd]);
-                        menuItemActionFunction(rowsDataForAction, actionParams);
+                        var menuActionParams=
+                            {contentHTable:menuItemParams.contentHTable,toolPanes:menuItemParams.toolPanes,thisDoc:menuItemParams.thisDoc};
+                        menuItemActionFunction(rowsDataForAction, menuActionParams);
                     });
                 return this;
             },
@@ -584,8 +594,8 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                     }
                 }
                 $TDF.addPrintDataSubItemTo(printData, "header");
-                printData.columns = this.contentTable.getVisibleColumns();                                  //console.log("TDocSimpleTable doPrint printData.columns=",this.contentTable.getVisibleColumns());
-                printData.data = this.contentTable.getContent();
+                printData.columns = this.contentHTable.getVisibleColumns();                                  //console.log("TDocSimpleTable doPrint printData.columns=",this.contentHTable.getVisibleColumns());
+                printData.data = this.contentHTable.getContent();
                 var totalStyle="font-size:12px;";
                 if(this.totals){
                     for(var tRowIndex in this.totalTableData){
@@ -608,7 +618,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 printWindow["printTableContentData"]= printData;
             },
             exportTableContentToExcel:function(){
-                $TDF.requestForExcelFile({tableData:this.contentTable.getContent(),visibleColumns:this.contentTable.getVisibleColumns()});
+                $TDF.requestForExcelFile({tableData:this.contentHTable.getContent(),visibleColumns:this.contentHTable.getVisibleColumns()});
             }
         });
     });

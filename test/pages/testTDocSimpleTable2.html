@@ -8,28 +8,18 @@
 <body class="claro">
 <page id="tDocSimpleTable2wActions_Page" design="headline" style="position:absolute;left:0;top:0;right:0;bottom:0;">
     <ContentPane region="top">
-        <Button id="btnLoadFail">load fail</Button><Button id="btnLoadNonCorrect">load non correct</Button>
-        <Button id="btnLoadProdsRemsNoDuplex">load prodsRems no duplex</Button><Button id="btnLoadProdsRems">load prodsRems</Button>
+        <Button id="btnLoadProdsRems">load prodsRems</Button>
     </ContentPane>
     <TDocSimpleTable id="tDocSimpleTable2wActions" region="center" title="Template Document Simple Table 2 with actions" style="margin:0;padding:0;"></TDocSimpleTable>
 </page>
 <script type="text/javascript">
     $app.dev=true;
     $app.startup("#tDocSimpleTable2wActions_Page",function(){                                               log("START tDocSimpleTable2wActions_Page PAGE...",$$);//!!!IT'S FOR TESTING!!!
-        $$.btnLoadFail.onClick= function(){
-            $$.tDocSimpleTable2wActions.dataURL='/test/1234567890-='; $$.tDocSimpleTable2wActions.loadTableContent();
-        };
-        $$.btnLoadNonCorrect.onClick= function(){
-            $$.tDocSimpleTable2wActions.dataURL='/test/prodsRemsData.json'; $$.tDocSimpleTable2wActions.loadTableContent();
-        };
-        $$.btnLoadProdsRemsNoDuplex.onClick= function(){
-            $$.tDocSimpleTable2wActions.dataURL='/test/prodsRemsWDupl'; $$.tDocSimpleTable2wActions.loadTableContent();
-        };
         $$.btnLoadProdsRems.onClick= function(){
             $$.tDocSimpleTable2wActions.dataURL='/test/prodsRems'; $$.tDocSimpleTable2wActions.loadTableContent();
         };
         $$.tDocSimpleTable2wActions
-                .setParams({dataURL: null, dataURLCondition:null, buttonPrint: false, rightPane:{width:300}})
+                .setParams({dataURL: "/test/prodsRems", dataURLCondition:null, buttonPrint: false, rightPane:{width:300}})
 //            .addTotalCountNumberBox("ИТОГО строк:", 140, {style: "font-weight:bold;", inputStyle: "width:40px;"})
                 .addSelectBox("Stock",{width:300,selectStyle:"width:250px",valueItemName:"StockID", labelDataItem:"StockName",
                     loadDropDownURL:"/test/getDirStocksForSelect",contentTableCondition:"StockID="})
@@ -65,12 +55,18 @@
                 .addContentTableAction("rewritePPByRowData",{
                     startAction:function(contentTableRowsData, actionParams, startContentTableAction){
                         actionParams["finishedCounterByNoConnection"]=0;actionParams["finishedCounterByFailed"]=0;
-                        if(actionParams.toolPanes&&actionParams.toolPanes[0]) actionParams.toolPanes[0].set("content","");
+                        if(!actionParams.progressDialogTitle)actionParams.progressDialogTitle="Пересписание партий товаров";
+                        actionParams.progressDialog.start({title:actionParams.progressDialogTitle,
+                            contentHeight:300,progressMaximum:contentTableRowsData.length, message:"ПРОЦЕСС НАЧАТ..."});
                         startContentTableAction();
                     },
                     tableRowAction:function(contentTableRowData, actionParams, contentTableUpdatedRowData, startNextAction, finishedAction){
-                        var changeID = contentTableRowData.changeID;                    console.log("ContentTableRowsAction rewritePPByRowData contentTableRowData=",contentTableRowData);
+                        var rowData=contentTableRowData,
+                                changeID = contentTableRowData.changeID;                    console.log("ContentTableRowsAction rewritePPByRowData contentTableRowData=",contentTableRowData);
                         var type = contentTableRowData.type;
+
+                        actionParams.progressDialog.addMsg(actionParams.progressCounter+" ПРОЦЕСС:"+rowData.ProdName+"("+rowData.ProdID+")");
+
                         if (type !== "new"){ startNextAction(); return; }
                         //if type == "new"
                         $$.request.postJSONData({url: "/sysadmin/database/applyChange", conditions: null, showRequestErrorDialog:false,
@@ -78,32 +74,12 @@
                                 function(result,error){                                            console.log("applyChange result,error",result,error);
                                     var typeValue = type, changeMsg = null;
 
-
-                                    var infoMsgByParams= function(actionParams){
-                                        if(!actionParams.toolPanes||!actionParams.toolPanes[0]) return;
-                                        var infoToolPaneMsg=null;
-                                        if(actionParams["finishedCounterByNoConnection"]>0)
-                                            infoToolPaneMsg= "<b style='color:red'>FAILED because failed connent to server!</b>"+
-                                                    "<br><b style='color:red'>Try number "+actionParams["finishedCounterByNoConnection"]+" ...</b>";
-                                        if(actionParams["finishedCounterByFailed"]>0) {
-                                            if(!infoToolPaneMsg) infoToolPaneMsg=""; else infoToolPaneMsg+="<br>";
-                                            infoToolPaneMsg+="<b style='color:red'>FAILED APPLIED!"
-                                                    +"<br>Reason:"+actionParams["failedMsg"]+"</b>";
-                                        }
-                                        if(infoToolPaneMsg) actionParams.toolPanes[0].set("content",infoToolPaneMsg);
-                                    };
-
-
                                     if(error&&error.reqError){
                                         if(!actionParams["finishedCounterByNoConnection"]) actionParams["finishedCounterByNoConnection"]=0;
                                         actionParams["finishedCounterByNoConnection"]++;
-                                        infoMsgByParams(actionParams);
+
                                         if(actionParams["finishedCounterByNoConnection"]>10) {
-                                            $$.dialogs.showSimple({id:"errorDialog", title:"FAIL",
-                                                content:"No connection to the server!"+((error.message)?"<br>Reason:"+error.message:""),
-                                                btnOkLabel:"Close", width:350, style:"text-align:center"});
-                                            finishedAction();
-                                            return;
+                                            finishedAction(); return;
                                         }
                                         startNextAction(false);
                                         return;
@@ -126,15 +102,16 @@
                                         }
                                     }
                                     contentTableUpdatedRowData["message"]= changeMsg; contentTableUpdatedRowData["type"]= typeValue;
-                                    infoMsgByParams(actionParams);
+
                                     if(actionParams["finishedCounterByFailed"]>0) {
-                                        finishedAction();
-                                        return;
+                                        finishedAction(); return;
                                     }
                                     startNextAction();
                                 });
                     },
-                    endAction:function(){
+                    endAction:function(rowsData, actionParams){
+                        if(actionParams.progressStopped)actionParams.progressDialog.addMsg("ПРОЦЕСС ОСТАНОВЛЕН.");
+                        else actionParams.progressDialog.addMsg("ПРОЦЕСС ЗАВЕРШЕН.");
 //                    if (sysadmin_database_PageContainer.getParent().updateDBState)
 //                        sysadmin_database_PageContainer.getParent().updateDBState({revalidate:true});
                         if ($$.$parent.updateDBState) $$.$parent.updateDBState({revalidate:true});
@@ -144,7 +121,8 @@
                 .addContentTablePopupMenuAction("Rewrite selected prods PPs...", {contentTableActionName:"rewritePPByRowData"})
                 .addContentTablePopupMenuAction("Rewrite all prods PPs...", {contentTableActionName:"rewritePPByRowData",
                     beforeContentTableAction:function(selectedTableContent, actionParams, startContentTableAction){
-                        startContentTableAction(actionParams.thisInstance.getTableContent());
+                        actionParams.progressDialogTitle="Пересписание партий всех товаров";
+                        startContentTableAction(actionParams.thisDoc.getTableContent());
                     }
                 });
         $$.tDocSimpleTable2wActions.startupDoc();
