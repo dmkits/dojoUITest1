@@ -1,11 +1,9 @@
 .handsontable table thead th {
     white-space: pre-line;
 }
-.ht_clone_top {/*for work scroll on top*/
-    width: auto !important;
+.ht_clone_top {
 }
-.wtHolder {/*for work scroll on top*/
-    width: auto !important;
+.wtHolder {
 }
 
 .hTableCurrentRow {

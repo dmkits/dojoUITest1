@@ -16,7 +16,7 @@ Handsontable.cellTypes['text'].editor.prototype.getValue = function(){
         var val = this.TEXTAREA.value;
         if(!val) return this.TEXTAREA.value;
         if(val.indexOf('%')>=0) val = val.replace('%','');
-        if(isNaN(val/100)) return this.TEXTAREA.value;
+        if (isNaN(val/100)) return this.TEXTAREA.value;
         return val/100;
     }else if(this.cellProperties["type"]=="numeric"){
         return this.TEXTAREA.value.replace('.',',');
@@ -164,6 +164,13 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                         return cellProperties;
                     },
                     cells: function (row, col, prop){ return {readOnly:true, renderer:this.cellValueRenderer}; },
+                    afterRender: function(isForced){//fix header width for scroll
+                        var scrollElemWidth=15;
+                        var cloneTop=this.rootElement.getElementsByClassName("ht_clone_top handsontable")[0];
+                        cloneTop.style["max-width"]=(cloneTop.style.width.replace("px","")-scrollElemWidth)+"px";
+                        var clone_wtHolder=cloneTop.getElementsByClassName("wtHolder")[0];
+                        clone_wtHolder.style["max-width"]=(clone_wtHolder.style.width.replace("px","")-scrollElemWidth)+"px";
+                    },
                     setDataSelectedProp: function(data, olddata){
                         if(data) data[this.htDataSelectedProp]= true;
                         if(olddata && olddata!==data) olddata[this.htDataSelectedProp]= false;
@@ -223,7 +230,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                 if(addingHeaderElements) this.tableHeaderAddedElements=addingHeaderElements;
                 var hInstance= this.getHandsonTable();
                 hInstance.updateSettings({
-                    afterRender: function (){
+                    afterRender: function(){
                         var theads=hInstance.rootElement.getElementsByTagName('thead'),                     //log("HTableSimple afterRender theads=",theads);
                             div= document.createElement("div");
                         for(var theadInd=0;theadInd<theads.length;theadInd++){
