@@ -2,23 +2,23 @@
  * Created by dmkits on 20.04.16.
  * Refactor by dmkits 15.02.17.
  */
-Handsontable.cellTypes['text'].editor.prototype.setValue = function(value) {                                //log("Handsontable.cellTypes['text'].editor.prototype.setValue ",value);
+Handsontable.cellTypes['text'].editor.prototype.setValue = function(value){                                //log("Handsontable.cellTypes['text'].editor.prototype.setValue ",value);
     var cellPropFormat = this.cellProperties["format"];
-    if (this.cellProperties["type"]=="numeric"&&cellPropFormat&&cellPropFormat.indexOf('%')>=0){
+    if(this.cellProperties["type"]=="numeric"&&cellPropFormat&&cellPropFormat.indexOf('%')>=0){
         var val = ''; if(value) val = Math.round(value.replace(',','.')*100)+'%'; this.TEXTAREA.value= val;
-    } else if (this.cellProperties["type"]=="numeric") {
+    }else if(this.cellProperties["type"]=="numeric"){
         this.TEXTAREA.value = value.replace('.',',');
-    } else this.TEXTAREA.value=value;
+    }else this.TEXTAREA.value=value;
 };
-Handsontable.cellTypes['text'].editor.prototype.getValue = function() {
+Handsontable.cellTypes['text'].editor.prototype.getValue = function(){
     var cellPropFormat = this.cellProperties["format"];
-    if (this.cellProperties["type"]=="numeric"&&cellPropFormat&&cellPropFormat.indexOf('%')>=0){
+    if(this.cellProperties["type"]=="numeric"&&cellPropFormat&&cellPropFormat.indexOf('%')>=0){
         var val = this.TEXTAREA.value;
         if(!val) return this.TEXTAREA.value;
         if(val.indexOf('%')>=0) val = val.replace('%','');
-        if (isNaN(val/100)) return this.TEXTAREA.value;
+        if(isNaN(val/100)) return this.TEXTAREA.value;
         return val/100;
-    } else if (this.cellProperties["type"]=="numeric") {
+    }else if(this.cellProperties["type"]=="numeric"){
         return this.TEXTAREA.value.replace('.',',');
     }
     return this.TEXTAREA.value;
@@ -26,7 +26,7 @@ Handsontable.cellTypes['text'].editor.prototype.getValue = function() {
 
 define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby", "app/request", "app/dialogs"],
     function(declare, ContentPane, Standby, Request, Dialogs){
-        return declare("HTableSimple", [ContentPane], {
+        return declare("HTableSimple", [ContentPane],{
             handsonTable: null,
             htColumns: [], htVisibleColumns: [],
             htData: [],
@@ -102,15 +102,9 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                 if(!data.items){ this.htData = []; return; }
                 this.htData = data.items;
             },
-            getData: function(){
-                return this.htData;
-            },
-            getRowIDName: function(){
-                return this.handsonTable.rowIDName;
-            },
-            getRowIDNames: function(){
-                return this.handsonTable.rowIDNames;
-            },
+            getData: function(){ return this.htData; },
+            getRowIDName: function(){ return this.handsonTable.rowIDName; },
+            getRowIDNames: function(){ return this.handsonTable.rowIDNames; },
             getColumns: function(){                                                                         //log("HTableSimple getColumns ",this.htColumns);
                 return this.htColumns;
             },
@@ -125,9 +119,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                         if(!parent.htVisibleColumns||!parent.htVisibleColumns[colIndex])return colIndex;
                         return parent.htVisibleColumns[colIndex]["name"];
                     },
-                    colHeaders: function(colIndex){
-                        return this.getColumnHeader(colIndex);
-                    },
+                    colHeaders: function(colIndex){ return this.getColumnHeader(colIndex); },
                     data: parent.htData, comments: parent.enableComments,//copyPaste: true,default
                     copyRowsLimit: 5000,
                     htDataSelectedProp: "<!$selected$!>",
@@ -147,11 +139,11 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                     wordWrap: parent.wordWrap, trimWhitespace:false,
                     enterMoves:{row:0,col:1}, tabMoves:{row:0,col:1},
                     multiSelect: true,
-                    beforeOnCellMouseDown: function(event, coords, element) {
+                    beforeOnCellMouseDown: function(event, coords, element){
                         if(!element)return;
-                        if(element.tagName==="TH"&&element.className=="addedHeaderTH") { event.stopImmediatePropagation(); }//disable added header click event
+                        if(element.tagName==="TH"&&element.className=="addedHeaderTH"){ event.stopImmediatePropagation(); }//disable added header click event
                     },
-                    cellValueRenderer:function (instance, td, row, col, prop, value, cellProperties) {
+                    cellValueRenderer:function (instance, td, row, col, prop, value, cellProperties){
                         if(cellProperties["html"]){
                             Handsontable.renderers.HtmlRenderer.apply(this, arguments);
                         }else{
@@ -171,9 +163,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                         if(rowSourceData&&rowSourceData[instance.getSettings().htDataSelectedProp]===true) td.classList.add('hTableCurrentRow');
                         return cellProperties;
                     },
-                    cells: function (row, col, prop) {
-                        return {readOnly:true, renderer:this.cellValueRenderer};
-                    },
+                    cells: function (row, col, prop){ return {readOnly:true, renderer:this.cellValueRenderer}; },
                     setDataSelectedProp: function(data, olddata){
                         if(data) data[this.htDataSelectedProp]= true;
                         if(olddata && olddata!==data) olddata[this.htDataSelectedProp]= false;
@@ -184,7 +174,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                     /*beforeSetRangeEnd: function(coords){                                                  log("HTableSimple beforeSetRangeEnd coords=",coords);
 
                      },*/
-                    afterSelectionEnd: function(r,c,r2,c2) {
+                    afterSelectionEnd: function(r,c,r2,c2){
                         var selection= [], firstItem=r;
                         if(r<=r2)
                             for(var ri=r; ri<=r2; ri++) selection[ri]=this.getContentRow(ri);
@@ -196,9 +186,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                     }
                 });
                 this.handsonTable.updateSettings({fillHandle: false});//it's for use fillHandle in childrens
-                this.handsonTable.getContent= function(){
-                    return this.getSourceData();
-                };
+                this.handsonTable.getContent= function(){ return this.getSourceData(); };
                 this.handsonTable.getContentRow= function(row){
                     if(!this.getContent()||this.getContent().length==0) return null;
                     return this.getContent()[row];
@@ -209,6 +197,15 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                 document.body.appendChild(this.loadingGif.domNode);
             },
             getHandsonTable: function(){ return this.handsonTable; },
+            resizeAll: function(changeSize,resultSize){
+                if(!changeSize) return;
+                this.resizePane(changeSize,resultSize);
+                var thisMarginTop= (this.domNode.style.marginTop).replace("px",""),
+                    thisMarginBottom= (this.domNode.style.marginBottom).replace("px","");
+                this.handsonTable.updateSettings(
+                    {/*width:this.domNode.clientWidth,*/ height:changeSize.h-2-thisMarginTop-thisMarginBottom}
+                );
+            },
             //setReadOnly: function(readOnly){                                                              console.log("this.handsonTable",this.handsonTable.getSettings().readOnly);
             //    if(readOnly===undefined) readOnly=true;
             //    this.readOnly= readOnly;
@@ -226,35 +223,25 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                 if(addingHeaderElements) this.tableHeaderAddedElements=addingHeaderElements;
                 var hInstance= this.getHandsonTable();
                 hInstance.updateSettings({
-                    afterRender: function () {
-                        var theads=hInstance.rootElement.getElementsByTagName('thead');                     //log("HTableSimple afterRender theads=",theads);
-                        var div= document.createElement("div");
+                    afterRender: function (){
+                        var theads=hInstance.rootElement.getElementsByTagName('thead'),                     //log("HTableSimple afterRender theads=",theads);
+                            div= document.createElement("div");
                         for(var theadInd=0;theadInd<theads.length;theadInd++){
-                            var thead= theads[theadInd];
-                            var newTR = document.createElement("tr");
-                            var newTH=document.createElement("th");newTH.setAttribute("class","addedHeaderTH");
+                            var thead= theads[theadInd],
+                                newTR = document.createElement("tr"),
+                                newTH=document.createElement("th");newTH.setAttribute("class","addedHeaderTH");
                             newTR.appendChild(newTH);
                             var tr=thead.getElementsByTagName('tr')[0];
-                            if(theadInd<=1) {
+                            if(theadInd<=1){
                                 thead.insertBefore(newTR, tr);
                                 newTH.setAttribute("colspan", tr.childNodes.length.toString());
                                 if(theadInd==1)newTH.appendChild(div);
-                                if (tr.firstChild) tr.firstChild.removeAttribute("colspan");
+                                if(tr.firstChild) tr.firstChild.removeAttribute("colspan");
                             }
                         }
-                        for(var eName in addingHeaderElements)
-                            div.appendChild(addingHeaderElements[eName]);
+                        for(var eName in addingHeaderElements) div.appendChild(addingHeaderElements[eName]);
                     }
                 });
-            },
-            resizeAll: function(changeSize,resultSize){
-                if(!changeSize) return;
-                this.resizePane(changeSize,resultSize);
-                var thisMarginTop= (this.domNode.style.marginTop).replace("px",""),
-                    thisMarginBottom= (this.domNode.style.marginBottom).replace("px","");
-                this.handsonTable.updateSettings(
-                    {/*width:this.domNode.clientWidth,*/ height:changeSize.h-2-thisMarginTop-thisMarginBottom}
-                );
             },
             //setDisabled: function(disabled){
             //    this.set("disabled",disabled);
@@ -328,9 +315,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                 }
                 this.setSelection( (newSelection)?newSelection[newSelectionFirstRowIndex]:null, newSelection); //log("HTableSimple resetSelection END",this.getSelectedRows()," rowIDName=", this.handsonTable.rowIDName);
             },
-            getContent: function(){
-                return this.handsonTable.getContent();
-            },
+            getContent: function(){ return this.handsonTable.getContent(); },
             getContentData: function(){//copy of contentData
                 var contentData=[], content=this.handsonTable.getContent();
                 for(var row=0;row<content.length;row++){
@@ -340,9 +325,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                 }
                 return contentData;
             },
-            getContentRow: function(rowInd){
-                return this.handsonTable.getContentRow(rowInd);
-            },
+            getContentRow: function(rowInd){ return this.handsonTable.getContentRow(rowInd); },
             getContentItemSum: function(itemName){
                 var contentData= this.getContent(), itemSum=0.0;
                 for(var dataItemIndex in contentData){
@@ -376,9 +359,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                 this.handsonTable.getSettings().setDataSelectedProp(newSelectedRow, oldSelectedRow);
                 this.handsonTable.render();
             },
-            setSelectedRowByIndex: function(rowIndex){
-                this.handsonTable.selectCell(rowIndex,0,rowIndex,0);
-            },
+            setSelectedRowByIndex: function(rowIndex){ this.handsonTable.selectCell(rowIndex,0,rowIndex,0); },
             setSelectedRow: function(rowData){
                 if(!rowData)return;
                 var instance=this;
@@ -407,9 +388,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                 if(!this.getSelectedRow) return null;
                 return this.getSelectedRow[itemName];
             },
-            getSelectedRows:function(){
-                return this.htSelection;
-            },
+            getSelectedRows:function(){ return this.htSelection; },
             onSelect: function(firstSelectedRowData, selection){
                 //TODO actions on/after row select by user or after call setSelectedRowByIndex/setSelectedRow/setSelectedRowByID
                 this.setSelection(firstSelectedRowData, selection);
