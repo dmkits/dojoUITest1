@@ -264,7 +264,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
              * default params.callUpdateContent!=false
              * if params.callUpdateContent==false not call onUpdateContent
              */
-            updateContent: function(newdata,params) {                                               log("HTableSimple updateContent newdata=",newdata," params=", params);
+            updateContent: function(newdata,params){                                                log("HTableSimple updateContent newdata=",newdata," params=", params);
                 if(newdata!==undefined) this.setData(newdata);
                 if(this.htData!==null) {//loadTableContent
                     this.handsonTable.updateSettings(

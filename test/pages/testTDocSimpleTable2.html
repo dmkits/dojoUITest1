@@ -35,18 +35,18 @@
                 .addToolPane({title:"info",
                     contentTableAction:function(params){
                         var info="";
-                        if(params.contentTableSelectedRow){
-                            info+="<b>OurID</b>: "+params.contentTableSelectedRow["OurID"];
-                            info+="<br><b>StockID</b>: "+params.contentTableSelectedRow["StockID"];
-                            info+="<br><b>StockName</b>: "+params.contentTableSelectedRow["StockName"];
-                            info+="<br><b>PLID</b>: "+params.contentTableSelectedRow["PLID"];
-                            info+="<br><b>ProdID</b>: "+params.contentTableSelectedRow["ProdID"];
-                            info+="<br><b>ProdName</b>: "+params.contentTableSelectedRow["ProdName"];
-                            info+="<br><b>UM</b>: "+params.contentTableSelectedRow["UM"];
-                            info+="<br><b>Article1</b>: "+params.contentTableSelectedRow["Article1"];
-                            info+="<br><b>TQty</b>: "+params.contentTableSelectedRow["TQty"];
-                            info+="<br><b>PriceMC</b>: "+params.contentTableSelectedRow["PriceMC"];
-                            info+="<br><b>TQtySum</b>: "+params.contentTableSelectedRow["TQty"]*params.contentTableSelectedRow["PriceMC"];
+                        if(params.contentHTableSelectedRow){
+                            info+="<b>OurID</b>: "+params.contentHTableSelectedRow["OurID"];
+                            info+="<br><b>StockID</b>: "+params.contentHTableSelectedRow["StockID"];
+                            info+="<br><b>StockName</b>: "+params.contentHTableSelectedRow["StockName"];
+                            info+="<br><b>PLID</b>: "+params.contentHTableSelectedRow["PLID"];
+                            info+="<br><b>ProdID</b>: "+params.contentHTableSelectedRow["ProdID"];
+                            info+="<br><b>ProdName</b>: "+params.contentHTableSelectedRow["ProdName"];
+                            info+="<br><b>UM</b>: "+params.contentHTableSelectedRow["UM"];
+                            info+="<br><b>Article1</b>: "+params.contentHTableSelectedRow["Article1"];
+                            info+="<br><b>TQty</b>: "+params.contentHTableSelectedRow["TQty"];
+                            info+="<br><b>PriceMC</b>: "+params.contentHTableSelectedRow["PriceMC"];
+                            info+="<br><b>TQtySum</b>: "+params.contentHTableSelectedRow["TQty"]*params.contentHTableSelectedRow["PriceMC"];
                         }
                         params.thisToolPane.set("content",info);
                     }
@@ -117,12 +117,18 @@
                         if ($$.$parent.updateDBState) $$.$parent.updateDBState({revalidate:true});
                     }
                 })
-                .addToolPaneActionButton("Rewrite Prod PP",{ btnStyle:"width:160px", contentTableActionName:"rewritePPByRowData"})
+                .addToolPaneActionButton("Rewrite Sel Prod PP",{ btnStyle:"width:160px", contentTableActionName:"rewritePPByRowData"})
+                .addToolPaneActionButton("Rewrite All Prod PP",{ btnStyle:"width:160px", contentTableActionName:"rewritePPByRowData",
+                    beforeContentTableAction:function(contentTableSelRowData, contentTableRowsData, actionParams, startContentTableAction){
+                        actionParams.progressDialogTitle="Пересписание партий всех товаров";
+                        startContentTableAction(contentTableRowsData);
+                    }
+                })
                 .addContentTablePopupMenuAction("Rewrite selected prods PPs...", {contentTableActionName:"rewritePPByRowData"})
                 .addContentTablePopupMenuAction("Rewrite all prods PPs...", {contentTableActionName:"rewritePPByRowData",
                     beforeContentTableAction:function(selectedTableContent, actionParams, startContentTableAction){
                         actionParams.progressDialogTitle="Пересписание партий всех товаров";
-                        startContentTableAction(actionParams.thisDoc.getTableContent());
+                        startContentTableAction(actionParams.thisDoc.getHTableContent());
                     }
                 });
         $$.tDocSimpleTable2wActions.startupDoc();
