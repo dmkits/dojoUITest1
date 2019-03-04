@@ -111,7 +111,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
             getVisibleColumns: function(){ return this.htVisibleColumns; },
             createHandsonTable: function(){
                 var content = document.createElement('div');content.style="width:100%;height:100%;margin0;padding:0;";
-                this.domNode.appendChild(content);
+                this.domNode.appendChild(content); this.domNode.style.overflow="hidden";
                 var parent=this;
                 this.handsonTable = new Handsontable(content, {
                     columns: parent.htVisibleColumns,
@@ -164,13 +164,6 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                         return cellProperties;
                     },
                     cells: function (row, col, prop){ return {readOnly:true, renderer:this.cellValueRenderer}; },
-                    afterRender: function(isForced){//fix header width for scroll
-                        var scrollElemWidth=15;
-                        var cloneTop=this.rootElement.getElementsByClassName("ht_clone_top handsontable")[0];
-                        cloneTop.style["max-width"]=(cloneTop.style.width.replace("px","")-scrollElemWidth)+"px";
-                        var clone_wtHolder=cloneTop.getElementsByClassName("wtHolder")[0];
-                        clone_wtHolder.style["max-width"]=(clone_wtHolder.style.width.replace("px","")-scrollElemWidth)+"px";
-                    },
                     setDataSelectedProp: function(data, olddata){
                         if(data) data[this.htDataSelectedProp]= true;
                         if(olddata && olddata!==data) olddata[this.htDataSelectedProp]= false;

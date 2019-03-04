@@ -20,7 +20,7 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
                 else if(node.tagName=="ToggleButton".toUpperCase()) tagClass=ToggleButton;
                 if(!tagClass)return;
                 var params={tagName:node.tagName};
-                this.parseNodeAttributes(params,node,["class","style", "iconClass","aria-disabled"]);
+                this.parseNodeAttributes(params,node,["class","style","fStyle", "iconClass","aria-disabled"]);
                 var d=new tagClass(params,node);
                 d.domNode.setAttribute("tagName",node.tagName);                                             //log('tagParser.createBaseTags: d=',d);
                 var label=node.getAttribute("label");
@@ -48,7 +48,7 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
                 if(!tagClass)return;
                 var params={tagName:node.tagName};
                 this.parseNodeAttributes(params,node,
-                    ["class","style","region","design","gutters","tabPosition","containerId","title","iconClass"],
+                    ["class","style","region","design","gutters","splitter","tabPosition","containerId","title","iconClass"],
                     {"childIconClass":"iconClass"});
                 var d=new tagClass(params,node);                                                            //log('tagParser.createContainerTags: d=',d);
                 d.domNode.setAttribute("tagName",node.tagName);
@@ -121,7 +121,7 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
                 this.parseContainer(0,containerNode,$page, startupList);
                 if(startupList.length>0)startupList[0].startup();                                           //log("startupList",startupList);
             },
-            parseContainer: function(ind,containerNode,$page, startupList) {
+            parseContainer: function(ind,containerNode,$page, startupList){
                 var containerChild=containerNode.children[ind];
                 if(!containerChild)return;                                                                  //log('tagParser.parseContainer: containerChild=', containerChild);
                 var newNode=this.createBaseTags(containerChild);

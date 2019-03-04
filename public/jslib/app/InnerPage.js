@@ -1,5 +1,5 @@
-define(["dojo/_base/declare","dijit/layout/ContentPane","app/tagParser","app/scriptsParser"],
-        function(declare,ContentPane,tagParser,scriptsParser){
+define(["dojo/_base/declare","dijit/layout/ContentPane","app/tagParser","app/scriptsParser", "app/innerComponentFunctions","app/base"],
+        function(declare,ContentPane,tagParser,scriptsParser, InnerComponentFunctions, Base){
             return declare("InnerPage",ContentPane,{
                 constructor: function(args){
                     this.parseOnLoad=false;
@@ -7,9 +7,12 @@ define(["dojo/_base/declare","dijit/layout/ContentPane","app/tagParser","app/scr
                         dialogs:window.$$.dialogs,request:window.$$.request,
                         $dialogs:window.$$.dialogs,$request:window.$$.request
                     };
+                    this.$= new InnerComponentFunctions(this,this.$innerPage);
+                    this.$innerPage.$=this.$;
+                    Base._exportFunctionsTo(this.$innerPage);
                     declare.safeMixin(this,args);
                 },
-                onLoad :function(){                                                                         console.log('InnerPage.onLoad',this.containerNode);
+                onLoad: function(){                                                                         log('InnerPage.onLoad',this.containerNode);
                     tagParser.parseThis(this.containerNode,this.$innerPage);
                     this.startup();
                     this._layout();

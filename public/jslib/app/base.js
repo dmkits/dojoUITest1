@@ -60,6 +60,12 @@ define(["dijit/registry", "dojo/dom-style"],
             },
             yesterday:function(){
                 return moment().subtract(1,'day').toDate();
+            },
+            _exportFunctionsTo: function(sender){
+                sender.today=this.today;
+                sender.curMonthBDate=this.curMonthBDate;
+                sender.curMonthEDate=this.curMonthEDate;
+                sender.yesterday=this.yesterday;
             }
         }
     });
