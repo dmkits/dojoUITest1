@@ -1,307 +1,192 @@
-define(["dojo/_base/lang", "dojo/_base/array", "dojo/_base/declare", "dojo/has", "./CartesianBase", "./_PlotEvents", "./common",
-		"dojox/lang/functional", "dojox/lang/functional/reversed", "dojox/lang/utils", "dojox/gfx/fx"],
-	function(lang, arr, declare, has, CartesianBase, _PlotEvents, dc, df, dfr, du, fx){
-
-	var purgeGroup = dfr.lambda("item.purgeGroup()");
-
-	var alwaysFalse = function(){ return false; };
-
-	return declare("dojox.charting.plot2d.Columns", [CartesianBase, _PlotEvents], {
-		// summary:
-		//		The plot object representing a column chart (vertical bars).
-		defaultParams: {
-			gap:	0,		// gap between columns in pixels
-			animate: null,  // animate bars into place
-			enableCache: false
-		},
-		optionalParams: {
-			minBarSize:	1,	// minimal column width in pixels
-			maxBarSize:	1,	// maximal column width in pixels
-			// theme component
-			stroke:		{},
-			outline:	{},
-			shadow:		{},
-			fill:		{},
-			filter:     {},
-			styleFunc:  null,
-			font:		"",
-			fontColor:	""
-		},
-
-		constructor: function(chart, kwArgs){
-			// summary:
-			//		The constructor for a columns chart.
-			// chart: dojox/charting/Chart
-			//		The chart this plot belongs to.
-			// kwArgs: dojox.charting.plot2d.__BarCtorArgs?
-			//		An optional keyword arguments object to help define the plot.
-			this.opt = lang.clone(lang.mixin(this.opt, this.defaultParams));
-			du.updateWithObject(this.opt, kwArgs);
-			du.updateWithPattern(this.opt, kwArgs, this.optionalParams);
-			this.animate = this.opt.animate;
-			this.renderingOptions = { "shape-rendering": "crispEdges" };
-		},
-
-		getSeriesStats: function(){
-			// summary:
-			//		Calculate the min/max on all attached series in both directions.
-			// returns: Object
-			//		{hmin, hmax, vmin, vmax} min/max in both directions.
-			var stats = dc.collectSimpleStats(this.series, lang.hitch(this, "isNullValue"));
-			stats.hmin -= 0.5;
-			stats.hmax += 0.5;
-			return stats; // Object
-		},
-
-		createRect: function(run, creator, params){
-			var rect;
-			if(this.opt.enableCache && run._rectFreePool.length > 0){
-				rect = run._rectFreePool.pop();
-				rect.setShape(params);
-				// was cleared, add it back
-				creator.add(rect);
-			}else{
-				rect = creator.createRect(params);
-			}
-			if(this.opt.enableCache){
-				run._rectUsePool.push(rect);
-			}
-			return rect;
-		},
-
-		render: function(dim, offsets){
-			// summary:
-			//		Run the calculations for any axes for this plot.
-			// dim: Object
-			//		An object in the form of { width, height }
-			// offsets: Object
-			//		An object of the form { l, r, t, b}.
-			// returns: dojox/charting/plot2d/Columns
-			//		A reference to this plot for functional chaining.
-			if(this.zoom && !this.isDataDirty()){
-				return this.performZoom(dim, offsets);
-			}
-			this.resetEvents();
-			this.dirty = this.isDirty();
-			var s;
-			if(this.dirty){
-				arr.forEach(this.series, purgeGroup);
-				this._eventSeries = {};
-				this.cleanGroup();
-				s = this.getGroup();
-				df.forEachRev(this.series, function(item){ item.cleanGroup(s); });
-			}
-			var t = this.chart.theme,
-				ht = this._hScaler.scaler.getTransformerFromModel(this._hScaler),
-				vt = this._vScaler.scaler.getTransformerFromModel(this._vScaler),
-				baseline = Math.max(this._vScaler.bounds.lower,
-					this._vAxis ? this._vAxis.naturalBaseline : 0),
-				baselineHeight = vt(baseline),
-				events = this.events(),
-				bar = this.getBarProperties();
-
-			var z = this.series.length;
-			arr.forEach(this.series, function(serie){if(serie.hidden){z--;}});
-
-			// Collect and calculate  all values
-			var extractedValues = this.extractValues(this._hScaler);
-			extractedValues = this.rearrangeValues(extractedValues, vt, baselineHeight);
-
-			for(var i = 0; i < this.series.length; i++){
-				var run = this.series[i];
-				if(!this.dirty && !run.dirty){
-					t.skip();
-					this._reconnectEvents(run.name);
-					continue;
-				}
-				run.cleanGroup();
-				if(this.opt.enableCache){
-					run._rectFreePool = (run._rectFreePool?run._rectFreePool:[]).concat(run._rectUsePool?run._rectUsePool:[]);
-					run._rectUsePool = [];
-				}
-				var theme = t.next("column", [this.opt, run]),
-					eventSeries = new Array(run.data.length);
-
-				if(run.hidden){
-					run.dyn.fill = theme.series.fill;
-					continue;
-				}
-				z--;
-
-				s = run.group;
-				var indexed = arr.some(run.data, function(item){
-					return typeof item == "number" || (item && !item.hasOwnProperty("x"));
-				});
-				// on indexed charts we can easily just interate from the first visible to the last visible
-				// data point to save time
-				var min = indexed?Math.max(0, Math.floor(this._hScaler.bounds.from - 1)):0;
-				var max = indexed?Math.min(run.data.length, Math.ceil(this._hScaler.bounds.to)):run.data.length;
-				for(var j = min; j < max; ++j){
-					var value = run.data[j];
-					if(!this.isNullValue(value)){
-						var val = this.getValue(value, j, i, indexed),
-							vv = vt(val.y),
-							h = extractedValues[i][j],
-							finalTheme,
-							sshape;
-
-						if(this.opt.styleFunc || typeof value != "number"){
-							var tMixin = typeof value != "number" ? [value] : [];
-							if(this.opt.styleFunc){
-								tMixin.push(this.opt.styleFunc(value));
-							}
-							finalTheme = t.addMixin(theme, "column", tMixin, true);
-						}else{
-							finalTheme = t.post(theme, "column");
-						}
-
-						if(bar.width >= 1){
-							var rect = {
-								x: offsets.l + ht(val.x + 0.5) + bar.gap + bar.thickness * z,
-								y: dim.height - offsets.b - baselineHeight - Math.max(h, 0),
-								width: bar.width,
-								height: Math.abs(h)
-							};
-							if(finalTheme.series.shadow){
-								var srect = lang.clone(rect);
-								srect.x += finalTheme.series.shadow.dx;
-								srect.y += finalTheme.series.shadow.dy;
-								sshape = this.createRect(run, s, srect).setFill(finalTheme.series.shadow.color).setStroke(finalTheme.series.shadow);
-								if(this.animate){
-									this._animateColumn(sshape, dim.height - offsets.b + baselineHeight, h);
-								}
-							}
-
-							var specialFill = this._plotFill(finalTheme.series.fill, dim, offsets);
-							specialFill = this._shapeFill(specialFill, rect);
-							var shape = this.createRect(run, s, rect).setFill(specialFill).setStroke(finalTheme.series.stroke);
-							this.overrideShape(shape, {index: j, value: val});
-							if(shape.setFilter && finalTheme.series.filter){
-								shape.setFilter(finalTheme.series.filter);
-							}
-							run.dyn.fill   = shape.getFill();
-							run.dyn.stroke = shape.getStroke();
-							if(events){
-								var o = {
-									element: "column",
-									index:   j,
-									run:     run,
-									shape:   shape,
-									shadow:  sshape,
-									cx:      val.x + 0.5,
-									cy:      val.y,
-									x:	     indexed?j:run.data[j].x,
-									y:	 	 indexed?run.data[j]:run.data[j].y
-								};
-								this._connectEvents(o);
-								eventSeries[j] = o;
-							}
-							// if val.py is here, this means we are stacking and we need to subtract previous
-							// value to get the high in which we will lay out the label
-							if(!isNaN(val.py) && val.py > baseline){
-								rect.height = h - vt(val.py);
-							}
-							this.createLabel(s, value, rect, finalTheme);
-							if(this.animate){
-								this._animateColumn(shape, dim.height - offsets.b - baselineHeight, h);
-							}
-						}
-					}
-				}
-				this._eventSeries[run.name] = eventSeries;
-				run.dirty = false;
-			}
-			this.dirty = false;
-			// chart mirroring starts
-			if(has("dojo-bidi")){
-				this._checkOrientation(this.group, dim, offsets);
-			}
-			// chart mirroring ends
-			return this;	//	dojox/charting/plot2d/Columns
-		},
-		getValue: function(value, j, seriesIndex, indexed){
-			var y,x;
-			if(indexed){
-				if(typeof value == "number"){
-					y = value;
-				}else{
-					y = value.y;
-				}
-				x = j;
-			}else{
-				y = value.y;
-				x = value.x - 1;
-			}
-			return { x: x, y: y };
-		},
-		extractValues: function(scaler){
-			var extracted = [];
-			for(var i = this.series.length - 1; i >= 0; --i){
-				var run = this.series[i];
-				if(!this.dirty && !run.dirty){
-					continue;
-				}
-				// on indexed charts we can easily just interate from the first visible to the last visible
-				// data point to save time
-				var indexed = arr.some(run.data, function(item){
-						return typeof item == "number" || (item && !item.hasOwnProperty("x"));
-					}),
-					min = indexed ? Math.max(0, Math.floor(scaler.bounds.from - 1)) : 0,
-					max = indexed ? Math.min(run.data.length, Math.ceil(scaler.bounds.to)) : run.data.length,
-					extractedSet = extracted[i] = [];
-				extractedSet.min = min;
-				extractedSet.max = max;
-				for(var j = min; j < max; ++j){
-					var value = run.data[j];
-					extractedSet[j] = this.isNullValue(value) ? 0 :
-						(typeof value == "number" ? value : value.y);
-				}
-			}
-			return extracted;
-		},
-		rearrangeValues: function(values, transform, baseline){
-			// transform to pixels
-			for(var i = 0, n = values.length; i < n; ++i){
-				var extractedSet = values[i];
-				if(extractedSet){
-					for(var j = extractedSet.min, k = extractedSet.max; j < k; ++j){
-						var value = extractedSet[j];
-						extractedSet[j] = this.isNullValue(value) ? 0 : transform(value) - baseline;
-					}
-				}
-			}
-			return values;
-		},
-
-		isNullValue: function(value){
-			if(value === null || typeof value == "undefined"){
-				return true;
-			}
-			var h = this._hAxis ? this._hAxis.isNullValue : alwaysFalse,
-				v = this._vAxis ? this._vAxis.isNullValue : alwaysFalse;
-			if(typeof value == "number"){
-				return v(0.5) || h(value);
-			}
-			return v(isNaN(value.x) ? 0.5 : value.x + 0.5) || value.y === null || h(value.y);
-		},
-		getBarProperties: function(){
-			var f = dc.calculateBarSize(this._hScaler.bounds.scale, this.opt);
-			return {gap: f.gap, width: f.size, thickness: 0};
-		},
-		_animateColumn: function(shape, voffset, vsize){
-			if(vsize===0){
-				vsize = 1;
-			}
-			fx.animateTransform(lang.delegate({
-				shape: shape,
-				duration: 1200,
-				transform: [
-					{name: "translate", start: [0, voffset - (voffset/vsize)], end: [0, 0]},
-					{name: "scale", start: [1, 1/vsize], end: [1, 1]},
-					{name: "original"}
-				]
-			}, this.animate)).play();
-		}
-
-	});
+//>>built
+define("dojox/charting/plot2d/Columns",["dojo/_base/lang","dojo/_base/array","dojo/_base/declare","dojo/has","./CartesianBase","./_PlotEvents","./common","dojox/lang/functional","dojox/lang/functional/reversed","dojox/lang/utils","dojox/gfx/fx"],function(_1,_2,_3,_4,_5,_6,dc,df,_7,du,fx){
+var _8=_7.lambda("item.purgeGroup()");
+var _9=function(){
+return false;
+};
+return _3("dojox.charting.plot2d.Columns",[_5,_6],{defaultParams:{gap:0,animate:null,enableCache:false},optionalParams:{minBarSize:1,maxBarSize:1,stroke:{},outline:{},shadow:{},fill:{},filter:{},styleFunc:null,font:"",fontColor:""},constructor:function(_a,_b){
+this.opt=_1.clone(_1.mixin(this.opt,this.defaultParams));
+du.updateWithObject(this.opt,_b);
+du.updateWithPattern(this.opt,_b,this.optionalParams);
+this.animate=this.opt.animate;
+this.renderingOptions={"shape-rendering":"crispEdges"};
+},getSeriesStats:function(){
+var _c=dc.collectSimpleStats(this.series,_1.hitch(this,"isNullValue"));
+_c.hmin-=0.5;
+_c.hmax+=0.5;
+return _c;
+},createRect:function(_d,_e,_f){
+var _10;
+if(this.opt.enableCache&&_d._rectFreePool.length>0){
+_10=_d._rectFreePool.pop();
+_10.setShape(_f);
+_e.add(_10);
+}else{
+_10=_e.createRect(_f);
+}
+if(this.opt.enableCache){
+_d._rectUsePool.push(_10);
+}
+return _10;
+},render:function(dim,_11){
+if(this.zoom&&!this.isDataDirty()){
+return this.performZoom(dim,_11);
+}
+this.resetEvents();
+this.dirty=this.isDirty();
+var s;
+if(this.dirty){
+_2.forEach(this.series,_8);
+this._eventSeries={};
+this.cleanGroup();
+s=this.getGroup();
+df.forEachRev(this.series,function(_12){
+_12.cleanGroup(s);
+});
+}
+var t=this.chart.theme,ht=this._hScaler.scaler.getTransformerFromModel(this._hScaler),vt=this._vScaler.scaler.getTransformerFromModel(this._vScaler),_13=Math.max(this._vScaler.bounds.lower,this._vAxis?this._vAxis.naturalBaseline:0),_14=vt(_13),_15=this.events(),bar=this.getBarProperties();
+var z=0;
+var _16=this.extractValues(this._hScaler);
+_16=this.rearrangeValues(_16,vt,_14);
+for(var i=0;i<this.series.length;i++){
+var run=this.series[i];
+if(!this.dirty&&!run.dirty){
+t.skip();
+this._reconnectEvents(run.name);
+continue;
+}
+run.cleanGroup();
+if(this.opt.enableCache){
+run._rectFreePool=(run._rectFreePool?run._rectFreePool:[]).concat(run._rectUsePool?run._rectUsePool:[]);
+run._rectUsePool=[];
+}
+var _17=t.next("column",[this.opt,run]),_18=new Array(run.data.length);
+if(run.hidden){
+run.dyn.fill=_17.series.fill;
+continue;
+}
+s=run.group;
+var _19=_2.some(run.data,function(_1a){
+return typeof _1a=="number"||(_1a&&!_1a.hasOwnProperty("x"));
+});
+var min=_19?Math.max(0,Math.floor(this._hScaler.bounds.from-1)):0;
+var max=_19?Math.min(run.data.length,Math.ceil(this._hScaler.bounds.to)):run.data.length;
+for(var j=min;j<max;++j){
+var _1b=run.data[j];
+if(!this.isNullValue(_1b)){
+var val=this.getValue(_1b,j,i,_19),vv=vt(val.y),h=_16[i][j],_1c,_1d;
+if(this.opt.styleFunc||typeof _1b!="number"){
+var _1e=typeof _1b!="number"?[_1b]:[];
+if(this.opt.styleFunc){
+_1e.push(this.opt.styleFunc(_1b));
+}
+_1c=t.addMixin(_17,"column",_1e,true);
+}else{
+_1c=t.post(_17,"column");
+}
+if(bar.width>=1){
+var _1f={x:_11.l+ht(val.x+0.5)+bar.gap+bar.thickness*z,y:dim.height-_11.b-_14-Math.max(h,0),width:bar.width,height:Math.abs(h)};
+if(_1c.series.shadow){
+var _20=_1.clone(_1f);
+_20.x+=_1c.series.shadow.dx;
+_20.y+=_1c.series.shadow.dy;
+_1d=this.createRect(run,s,_20).setFill(_1c.series.shadow.color).setStroke(_1c.series.shadow);
+if(this.animate){
+this._animateColumn(_1d,dim.height-_11.b+_14,h);
+}
+}
+var _21=this._plotFill(_1c.series.fill,dim,_11);
+_21=this._shapeFill(_21,_1f);
+var _22=this.createRect(run,s,_1f).setFill(_21).setStroke(_1c.series.stroke);
+this.overrideShape(_22,{index:j,value:val});
+if(_22.setFilter&&_1c.series.filter){
+_22.setFilter(_1c.series.filter);
+}
+run.dyn.fill=_22.getFill();
+run.dyn.stroke=_22.getStroke();
+if(_15){
+var o={element:"column",index:j,run:run,shape:_22,shadow:_1d,cx:val.x+0.5,cy:val.y,x:_19?j:run.data[j].x,y:_19?run.data[j]:run.data[j].y};
+this._connectEvents(o);
+_18[j]=o;
+}
+if(!isNaN(val.py)&&val.py>_13){
+_1f.height=h-vt(val.py);
+}
+this.createLabel(s,_1b,_1f,_1c);
+if(this.animate){
+this._animateColumn(_22,dim.height-_11.b-_14,h);
+}
+}
+}
+}
+this._eventSeries[run.name]=_18;
+run.dirty=false;
+z++;
+}
+this.dirty=false;
+if(_4("dojo-bidi")){
+this._checkOrientation(this.group,dim,_11);
+}
+return this;
+},getValue:function(_23,j,_24,_25){
+var y,x;
+if(_25){
+if(typeof _23=="number"){
+y=_23;
+}else{
+y=_23.y;
+}
+x=j;
+}else{
+y=_23.y;
+x=_23.x-1;
+}
+return {x:x,y:y};
+},extractValues:function(_26){
+var _27=[];
+for(var i=this.series.length-1;i>=0;--i){
+var run=this.series[i];
+if(!this.dirty&&!run.dirty){
+continue;
+}
+var _28=_2.some(run.data,function(_29){
+return typeof _29=="number"||(_29&&!_29.hasOwnProperty("x"));
+}),min=_28?Math.max(0,Math.floor(_26.bounds.from-1)):0,max=_28?Math.min(run.data.length,Math.ceil(_26.bounds.to)):run.data.length,_2a=_27[i]=[];
+_2a.min=min;
+_2a.max=max;
+for(var j=min;j<max;++j){
+var _2b=run.data[j];
+_2a[j]=this.isNullValue(_2b)?0:(typeof _2b=="number"?_2b:_2b.y);
+}
+}
+return _27;
+},rearrangeValues:function(_2c,_2d,_2e){
+for(var i=0,n=_2c.length;i<n;++i){
+var _2f=_2c[i];
+if(_2f){
+for(var j=_2f.min,k=_2f.max;j<k;++j){
+var _30=_2f[j];
+_2f[j]=this.isNullValue(_30)?0:_2d(_30)-_2e;
+}
+}
+}
+return _2c;
+},isNullValue:function(_31){
+if(_31===null||typeof _31=="undefined"){
+return true;
+}
+var h=this._hAxis?this._hAxis.isNullValue:_9,v=this._vAxis?this._vAxis.isNullValue:_9;
+if(typeof _31=="number"){
+return v(0.5)||h(_31);
+}
+return v(isNaN(_31.x)?0.5:_31.x+0.5)||_31.y===null||h(_31.y);
+},getBarProperties:function(){
+var f=dc.calculateBarSize(this._hScaler.bounds.scale,this.opt);
+return {gap:f.gap,width:f.size,thickness:0};
+},_animateColumn:function(_32,_33,_34){
+if(_34===0){
+_34=1;
+}
+fx.animateTransform(_1.delegate({shape:_32,duration:1200,transform:[{name:"translate",start:[0,_33-(_33/_34)],end:[0,0]},{name:"scale",start:[1,1/_34],end:[1,1]},{name:"original"}]},this.animate)).play();
+}});
 });
