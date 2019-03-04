@@ -3,7 +3,7 @@ var path = require('path'),
 
 module.exports= function(app) {
     app.get("/test/testTDocSimpleTable1", function (req, res) {
-        res.sendFile(appPagesPath + '/testTDocSimpleTable1c.html');
+        res.sendFile(appPagesPath + '/testTDocSimpleTable1inner.html');
     });
     app.get("/test/getDirCRsForSelect", function (req, res) {
         res.sendFile(path.join(__dirname,'/','prodsSalesCRsList.json'));

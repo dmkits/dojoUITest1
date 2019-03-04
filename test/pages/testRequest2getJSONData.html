@@ -4,10 +4,25 @@
     <script type="text/javascript" src="/jslib/dojoApp.js"></script>
     <title>testRequest2getJSONData</title>
 </head>
-<body class="claro">
-<page id="testRequest2getJSONData_Page" design="headline">
-    <ContentPane id="cp1" region="center" class="sysadmin_TopContent">
-        <button id="btnDoGetJSONData">Do get JSON data</button>
+<body class="claro" style="margin:0;padding:0;overflow:hidden;">
+<page id="testRequest2getJSONData_Page" design="headline" style="position:absolute;left:0;top:0;right:0;bottom:0;">
+    <ContentPane id="cp1" region="center">
+        <table width="100%" height="100%">
+            <tr>
+                <td width="250px">
+                    <button id="btnDoGetJSONData">Do get JSON data</button>
+                    <button id="btnDoGetJSONDataErr">Do get JSON data with err</button>
+                    <button id="btnDoGetJSONDataErrWRes">Do get JSON data with err and res</button>
+                    <button id="btnDoGetJSONDataNoResItem">Do get JSON data result no item</button>
+                </td>
+                <td>
+                    <div id="testRequest2getJSONData_Page_results"></div>
+                </td>
+                <td>
+                    <div id="testRequest2getJSONData_Page_errors"></div>
+                </td>
+            </tr>
+        </table>
     </ContentPane>
 </page>
 </body>
@@ -17,15 +32,15 @@
         var count= 0,
                 getJSONData=function(url,msg){
                     var msgCount=++count;
-                    $$.request.getJSONData(url,function(data,error){                                        log("getJSONData",msgCount,msg,"url=",url,"data=",data,"err=",error);
+                    $$.request.getJSONData(url,function(result,error){                                      log("getJSONData",msgCount,msg,"url=",url,"result=",result,"err=",error);
                     });
                 },
                 getJSONDataP=function(params,msg){
                     var msgCount=++count;
-                    $$.request.getJSONData(params,function(data,error){                                     log("getJSONData",msgCount,msg,"params:",params,"data=",data,"err=",error);
+                    $$.request.getJSONData(params,function(result,error){                                   log("getJSONData",msgCount,msg,"params:",params,"result=",result,"err=",error);
                     });
                 };
-        var doPostJSONData=function(){
+        var doGetJSONData=function(){
             getJSONData("/test/1234567890","Err");
             getJSONDataP({url:"/test/1234567890"},"Err");
             getJSONData("/test/testRequest3postJSON.html","Html");
@@ -51,7 +66,22 @@
             getJSONDataP({url:"/test/getJSONarrObjs"},"");
         };
         $$.btnDoGetJSONData.$.click(function(){
-            doPostJSONData();
+            doGetJSONData();
+        });
+        var doGetJSONDataError=function(){
+            getJSONDataP({url:"/test/getDataErr"},"get data");
+            getJSONDataP({url:"/test/getDataErrObj"},"get data");
+            getJSONDataP({url:"/test/getDataErrObjE"},"get data");
+            getJSONDataP({url:"/test/getDataErrObjWUM"},"get data");
+        };
+        $$.btnDoGetJSONDataErr.$.click(function(){
+            doGetJSONDataError();
+        });
+        $$.btnDoGetJSONDataErrWRes.$.click(function(){
+            getJSONDataP({url:"/test/getDataErrObjWRes"},"get data");
+        });
+        $$.btnDoGetJSONDataNoResItem.$.click(function(){
+            getJSONDataP({url:"/test/getDataErrObjWRes", resultItemName:"rrr"},"get data");
         });
     });
 </script>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" lang="ru" Accept-Language="ru"/>
+    <script type="text/javascript" src="/jslib/dojoApp.js" handsontable="handsontable-0.29.1" htableStyle="/css/htable.css"></script></head>
+    <link rel="stylesheet" type="text/css" href="/css/main.css" media="screen">
+    <title>testTDocSimpleTable1add</title>
+<body class="claro">
+<page id="testTDocSimpleTable1add" design="headline" style="position:absolute;left:0;top:0;right:0;bottom:0;">
+    <ContentPane region="top">
+        <Button id="testTDocSimpleTable1_addProdsRems">load prodsRems</Button>
+    </ContentPane>
+    <StackContainer id="testTDocSimpleTable1_DetailContainer" region="center" style="width:100%;height:100%; margin:0;padding:0;"></StackContainer>
+</page>
+<script type="text/javascript">
+    $app.dev=true;
+    $app.startup("#testTDocSimpleTable1add",function(){                                                     log("START testTDocSimpleTable1add PAGE...",$$);//!!!IT'S FOR TESTING!!!
+        $$.testTDocSimpleTable1_addProdsRems.onClick= function(){
+            if (!this.document){
+                var id="sysadmin_ProdsPrices_TableGetPrices"+this.id;
+                $$.testTDocSimpleTable1_DetailContainer.$.addAppComponent("TDocSimpleTable",
+                        {id:id, titleText:this.label, dataURL:'/test/prodsRems', dataURLCondition:null, buttonPrint: false, rightPane:{width:300}},
+                        function(doc){
+                            doc.addSelectBox("CR",{width:300,selectStyle:"width:250px", loadDropDownURL:"/test/prodsSalesCRsList.json",
+                                valueItemName:"CRID", labelDataItem:"CRName",contentTableCondition:"CRID="})
+                                    .addHeaderDateBox("Date from",{contentTableCondition:"DocDate>="})
+                                    .addHeaderDateBox("Date to",{contentTableCondition:"DocDate<="})
+                                    .addCheckBtnCondition("ALL",{width:90})
+                                    .addCheckBtnCondition("NOT Null",{width:90,contentTableConditions:{"NULLs<>":"0"}})
+                                    .addCheckBtnCondition("Null",{width:90,contentTableConditions:{"NULLs~":"0"}})
+                                    .addTotalCountNumberBox("Total rows:", 140)
+                                    .addTotalSumNumberTextBox("Total qty:", 415, "Qty", {style:"font-weight:bold;"})
+                                    .addTotalSumNumberTextBox("Total sum:", 205, "RealSum", {style:"font-weight:bold;",inputStyle:"width:95px",pattern:"#,###,###,###,##0.00#######"})
+                                    .addToolPane({title:"info",
+                                        contentTableAction:function(params){
+                                            if(!params.contentTableSelectedRow){ params.thisToolPane.set("content",""); return; }
+                                            var info="<b>OurID</b>: "+params.contentTableSelectedRow["OurID"]+
+                                                    "<br><b>StockID</b>: "+params.contentTableSelectedRow["StockID"]+
+                                                    "<br><b>CRName</b>: "+params.contentTableSelectedRow["CRName"]+
+                                                    "<br><b>ProdID</b>: "+params.contentTableSelectedRow["ProdID"]+
+                                                    "<br><b>ProdName</b>: "+params.contentTableSelectedRow["ProdName"]+
+                                                    "<br><b>Qty</b>: "+params.contentTableSelectedRow["Qty"]+
+                                                    "<br><b>PurPriceCC_wt</b>: "+params.contentTableSelectedRow["PurPriceCC_wt"]+
+                                                    "<br><b>RealPrice</b>: "+params.contentTableSelectedRow["RealPrice"]+
+                                                    "<br><b>RealSum</b>: "+params.contentTableSelectedRow["RealSum"]+
+                                                    "<br><b>DiscountP</b>: "+params.contentTableSelectedRow["DiscountP"]+
+                                                    "<br><b>DiscountSum</b>: "+params.contentTableSelectedRow["DiscountSum"];
+                                            params.thisToolPane.set("content",info);
+                                        }
+                                    })
+                                    .startupDoc();
+                        });
+                this.document = $$[id];
+            }
+            $$.testTDocSimpleTable1_DetailContainer.selectChild($$.testTDocSimpleTable1_addProdsRems.document);
+        };
+        $$.testTDocSimpleTable1_addProdsRems.onClick();
+    });
+</script>
+</body>
+</html>

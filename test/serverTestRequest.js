@@ -96,4 +96,22 @@ module.exports= function(app) {
     app.post("/test/postJSONarrObjs", function (req, res) {
         res.send({jsonArrObjs:jsonArrObjs});
     });
+
+    app.get("/test/getDataErr", function (req, res) {
+        res.send({error:"DATA ERROR"});
+    });
+    app.get("/test/getDataErrObj", function (req, res) {
+        res.send({ error:{message:"DATA ERROR MESSAGE"} });
+    });
+    app.get("/test/getDataErrObjE", function (req, res) {
+        res.send({ error:{} });
+    });
+    app.get("/test/getDataErrObjWUM", function (req, res) {
+        res.send({ error:{message:"DATA ERROR MESSAGE", userMessage:"DATA ERROR USER MESSAGE"} });
+    });
+    app.get("/test/getDataErrObjWRes", function (req, res) {
+        res.send({ res1:"RESULT 1 STR", error:{message:"DATA ERROR MESSAGE", userMessage:"DATA ERROR USER MESSAGE"} });
+    });
+
+
 };

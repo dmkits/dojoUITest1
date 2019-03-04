@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" lang="ru" Accept-Language="ru"/>
+
+    <!--<script src="/jslib/handsontable-0.29.1/moment/moment.js"></script>-->
+    <!--<script src="/jslib/handsontable-0.29.1/moment/locale/ru.js"></script>-->
+
+    <!--<link rel="stylesheet" type="text/css" href="../public/css/contentController.css" media="screen">-->
+    <!--<script type="text/javascript" src="../public/jslib/jsBarcode/JsBarcode.ean-upc.min.js"></script>-->
+
+    <script type="text/javascript" src="/jslib/dojoApp.js" handsontable="handsontable-0.29.1" htableStyle="/css/htable.css"></script></head>
+    <link rel="stylesheet" type="text/css" href="/css/main.css" media="screen">
+    <title>testTDocSimpleTable1inner</title>
+<body class="claro">
+<page id="testTDocSimpleTable1inner" design="headline" style="position:absolute;left:0;top:0;right:0;bottom:0;"></page>
+<script type="text/javascript">
+    $app.dev=true;
+    $app.startup("#testTDocSimpleTable1inner",function(){                                                   log("START testTDocSimpleTable1inner PAGE...",$$);//!!!IT'S FOR TESTING!!!
+        var testTDocSimpleTable1inner=$$.$parent;                                                           log("testTDocSimpleTable1inner=",testTDocSimpleTable1inner);
+        testTDocSimpleTable1inner.$.addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;;padding:0;",href:"/test/testTDocSimpleTable1ip.html"});
+    });
+</script>
+</body>
+</html>
