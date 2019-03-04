@@ -50,10 +50,11 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
             };
             this.addChildTo= function(o, Class, params) {
                 if(!o||!Class) {
-                    console.error("$ComponentFunctions addChildTo FAIL! Reason:no instance or no Class");return;
+                    console.error("$ComponentFunctions addChildTo FAIL! Reason:no instance or no Class");
+                    return;
                 }
                 if(!params) params={};
-                var child= o.$.addNew(Class, params);                                            console.log("addChildTo",child);
+                var child= o.$.addNew(Class, params);
                 o.addChild(child);
                 return child;
             };
@@ -78,12 +79,14 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
             this.addMenu=function(menuClassName,params,addCallback){
                 var menuClass=window.dijit[menuClassName];
                 if(!menuClass){
-                    console.error("CALL addMenu: dijit/"+menuClassName+" NOT INITIALIZED!!!"); return $c;
+                    console.error("CALL addMenu: dijit/"+menuClassName+" NOT INITIALIZED!!!");
+                    return $c;
                 }
                 if(menuClassName=="PopupMenuBarItem"){
                     var popupMenuClass=window.dijit["Menu"];
                     if(!popupMenuClass){
-                        console.error("CALL addMenu: dijit/"+popupMenuClass+" NOT INITIALIZED!!!"); return $c;
+                        console.error("CALL addMenu: dijit/"+popupMenuClass+" NOT INITIALIZED!!!");
+                        return $c;
                     }
                     var newMenu= this.addNew(menuClass,params), newPopupMenu= this.addNew(popupMenuClass,{id:params.id+"_menu"});
                     newMenu.set("popup",newPopupMenu);
@@ -95,6 +98,44 @@ define(["dijit/layout/BorderContainer", "dijit/layout/LayoutContainer", "dojox/l
                 var child= this.addChildTo($c,menuClass,params);
                 child.$.setHandlers(params);
                 if(addCallback)addCallback(child);
+                return $c;
+            };
+            this.addChildToNode= function(node, Class, params) {
+                if(!node||!Class) {
+                    console.error("$ComponentFunctions addChildTo FAIL! Reason:no node or no Class");
+                    return;
+                }
+                if(!params) params={};
+                var child= this.addNew(Class, params);
+                node.appendChild(child.domNode);
+                return child;
+            };
+            /**
+             * params = { ... }
+             * params.fStyle set style for focus node
+             */
+            this.addWigetTo=function(node,wClassName,params,addCallback){
+                var wigetClass=window.dijit[wClassName];
+                if(!wigetClass)wigetClass=window.dijit.layout[wClassName];
+                if(!wigetClass)wigetClass=window.dijit.form[wClassName];
+                if(!wigetClass){
+                    console.error("CALL addDijit: dijit/"+wClassName+" NOT INITIALIZED!!!");
+                    return $c;
+                }
+                var child= this.addChildToNode(node,wigetClass,params);
+                if(params.fStyle&&child.focusNode) child.focusNode.setAttribute("style",params.fStyle);
+                child.$.setHandlers(params);
+                if(addCallback)addCallback(child);
+                return $c;
+            };
+            this.addAppComponent=function(acClassName,params,addCallback){
+                var appCompClass=window[acClassName];
+                if(!appCompClass){
+                    console.error("CALL addAppComponent: "+acClassName+" NOT INITIALIZED!!!");
+                    return $c;
+                }
+                var cInctance= this.addChildTo($c,appCompClass,params);
+                if(addCallback)addCallback(cInctance);
                 return $c;
             };
         };
