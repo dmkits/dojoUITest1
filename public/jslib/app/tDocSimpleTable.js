@@ -143,7 +143,7 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
             },
 
             /**
-             * params : { initValueDate:"curDate"/"curMonthBDate"/"curMonthEDate",
+             * params : { initValueDate:"curDate"/"curMonthBDate"/"curMonthEDate"/<value>,
              *  contentTableCondition:"<condition>", contentTableParam:"<paramName>" }
              * default params.initValueDate = "curDate"
              * default params.width = 100
@@ -153,7 +153,8 @@ define(["dojo/_base/declare", "dijit/layout/BorderContainer", "app/tDocsFunction
                 var initValueDate=null;
                 if(params.initValueDate==="curMonthBDate") initValueDate= Base.curMonthBDate();
                 else if(params.initValueDate==="curMonthEDate") initValueDate= Base.curMonthEDate();
-                else initValueDate= Base.today();
+                else if(params.initValueDate===undefined) initValueDate= Base.today();
+                else initValueDate=params.initValueDate;
                 if(!params.width) params.width=105;
                 var dateBox= $TDF.addTableCellDateBoxTo(this.topTableRow,
                     {labelText:labelText, labelStyle:"margin-left:5px;", cellWidth:params.width, cellStyle:"text-align:right;",
