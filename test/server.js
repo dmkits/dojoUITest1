@@ -35,7 +35,7 @@ global.appModulesPath= path.join(__dirname,'/modules/','');
 require('./serverTestRequest')(server);
 require('./serverTestDocSimpleTable')(server);
 
-var serverPort=8181;
+var serverPort=8281;
 server.listen(serverPort, function (err) {
     if(err){
         console.log("listen port err= ", err);
