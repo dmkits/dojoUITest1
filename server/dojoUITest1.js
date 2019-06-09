@@ -33,8 +33,8 @@ module.exports= function(app) {
     app.get("/sysadmin", function (req, res) {
         res.sendFile(appViewsPath + '/sysadmin.html');
     });
-    app.get("/sysadmin/startupConfig", function (req, res) {
-        res.sendFile(appViewsPath + '/sysadmin/startupConfig.html');
+    app.get("/sysadmin/sysConfig", function (req, res) {
+        res.sendFile(appViewsPath + '/sysadmin/sysConfig.html');
     });
     app.get("/sysadmin/Database", function (req, res) {
         res.sendFile(appViewsPath + '/sysadmin/database.html');
@@ -53,9 +53,9 @@ module.exports= function(app) {
         ],
         identifier:"changeID",
         items:[
-            {changeID:"1",changeObj:"o1",changeVal:"QWErtyUIOP",type:"applied",message:"msg1"},
-            {changeID:"1-2",changeObj:"oo12",changeVal:"ASDfghJKL",type:"new",message:"msg22"},
-            {changeID:"1-2-3",changeObj:"ooo123",changeVal:"1234567890",type:"new",message:"msg333"}
+            {changeID:"1",changeObj:"o1",changeVal:"QWErtyUIOP",type:"applied",message:""},
+            {changeID:"1-2",changeObj:"oo12",changeVal:"ASDfghJKL",type:"new",message:""},
+            {changeID:"1-2-3",changeObj:"ooo123",changeVal:"1234567890",type:"new",message:""}
         ]
     };
     app.get("/sysadmin/Database/getCurrentChanges", function (req, res) {
