@@ -10,11 +10,11 @@ define(["app/base", "dijit/Dialog", "dijit/form/Button", "dijit/ProgressBar", "d
              */
             _doSimpleDialog: function(params){
                 if(!params) params={};
-                if(!params.dialogID) params.dialogID="DialogSimple";
+                if(!params.id) params.id="DialogSimple";
                 var dialogStyle="text-align:center;",
-                    btnOKID=params.dialogID+"_btnOK",
+                    btnOKID=params.id+"_btnOK",
                     actionBarTemplate=params.actionBarTemplate||'<div class="dijitDialogPaneActionBar" style="text-align:center"><button id="'+btnOKID+'"></button></div>';
-                var dlg = base.instance(params.dialogID, Dialog, {actionBarTemplate:actionBarTemplate});
+                var dlg = base.instance(params.id, Dialog, {actionBarTemplate:actionBarTemplate});
                 if(params.width)dialogStyle=dialogStyle+'width:'+params.width+'px; ';
                 if(params.height)dialogStyle=dialogStyle+'height:'+params.height+'px; ';
                 if(params.style) dlg.set("style", dialogStyle+params.style); else dlg.set("style", dialogStyle);
