@@ -95,8 +95,8 @@ define(["dojo/request", "app/base","app/dialogs"],
              * call resultCallback(<response result>, <error>) if request success and exists <response result>.error
              */
             processJSONDataResult: function(params, respJSON,error, resParams, resultCallback){
-                var requestFailDialog=null, self=this,
-                    result=(params&&params.resultItemName)?respJSON[params.resultItemName]:respJSON,
+                var requestFailDialog=null, self=this, hasRespJSON=respJSON!==undefined&&respJSON!==null,
+                    result=(hasRespJSON&&params&&params.resultItemName)?respJSON[params.resultItemName]:respJSON,
                     hasResult=result!==undefined&&result!==null;
                 if(params&&params.showErrorDialog!==false)
                     requestFailDialog= function(msg, reason){
