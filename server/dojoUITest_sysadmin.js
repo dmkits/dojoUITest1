@@ -167,8 +167,18 @@ module.exports= function(app){
     app.get("/sysadmin/Database/getCurrentChanges",function(req,res){
         tableData.getTableDataForHTable({"1~":1}, tDBCurrentChangesColumns, 0, 'currentChangesItems.json',
             function(tDBCurrentChangesData){
+                for(var i = 0; i < tDBCurrentChangesData.items.length; i++){
+                    var tDBCurChangeDataItem = tDBCurrentChangesData.items[i];
+                    if(!tDBCurChangeDataItem.type) tDBCurChangeDataItem.type="new";
+                }
                 res.send(tDBCurrentChangesData);
             });
+    });
+    app.post("/sysadmin/Database/applyChange",function(req,res){
+        var changeID=req.body["CHANGE_ID"];
+        if(changeID=="1-2") res.send({resultItem:{"ID":changeID,"CHANGE_MSG":"Applied "+changeID+"!"}});
+        else if(changeID=="1-2-3") res.send({resultItem:{"CHANGE_MSG":"FAILED result for "+changeID+"!"}});
+        else res.send();
     });
     app.get("/sysadmin/DatabaseNEW",function(req,res){
         res.sendFile(appViewsPath + '/sysadmin/databaseNEW.html');

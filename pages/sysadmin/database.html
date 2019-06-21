@@ -14,33 +14,9 @@
         <TDocSimpleTable id="sadb_TDocDBChangeLog" title="Change log" iconClass="dijitCheckBoxIcon" style="margin:0;padding:0;"></TDocSimpleTable>
     </StackContainer>
 </LayoutContainer>
-<script type="text/javascript">                                                                             console.log("sysadmin database $$",$$);
-    $$.request.getJSONData({url:"/sysadmin/database/get1", condition:null, showRequestErrorDialog:false, data:{}, consoleLog:true},
-        function(result,error){
-                                console.log("RESULT /sysadmin/database/get1",result,error);
-        });
-
-    var htDBCurrentChangesData={
-        columns:[
-            {data: "changeID", name: "changeID", width: 200, type: "text"},
-            {data: "changeDatetime", name: "changeDatetime", width: 120, type:"text", datetimeFormat:"YYYY-MM-DD HH:mm:ss"},
-            {data: "changeObj", name: "changeObj", width: 200, type: "text"},
-            {data: "changeVal", name: "changeVal", width: 450, type: "text"},
-            {data: "type", name: "type", width: 100, type: "text"},
-            {data: "message", name: "message", width: 200, type: "text"}
-        ],
-        identifier:"changeID",
-        items:[
-            {changeID:"1",changeObj:"o1",changeVal:"QWErtyUIOP",type:"str",message:""},
-            {changeID:"1-2",changeObj:"oo12",changeVal:"ASDfghJKL",type:"str",message:""},
-            {changeID:"1-2-3",changeObj:"ooo123",changeVal:"1234567890",type:"str",message:""}
-        ]
-    };
-//    $$.sadb_HTableDBCurrentChanges.updateContent(htDBCurrentChangesData);                     console.log("HTableDBCurrentChanges",$$.sadb_HTableDBCurrentChanges.getColumns(),$$.sadb_HTableDBCurrentChanges.getData());
-                                                                                                            console.log("HTableDBCurrentChanges",$$.sadb_TDocDBCurrentChanges);
-
+<script type="text/javascript">                                                                             log("sysadmin database $$",$$);//!!!IT'S FOR TESTING!!!
     $$.sadb_TDocDBCurrentChanges
-            .init({titleText:"Data model current changes", dataURL:"/sysadmin/database/getCurrentChanges", buttonPrint: false,rightPane:{width:200}})
+            .init({titleText:"Data model current changes", dataURL:"/sysadmin/database/getCurrentChanges", buttonPrint:false, rightPane:{width:200}})
             .addTotalCountNumberBox("ИТОГО строк:", 140, {style:"font-weight:bold;",inputStyle:"width:40px;"})
             .addToolPane({title:"info",
                 contentTableAction:function(params){
@@ -59,92 +35,76 @@
             .addToolPane({title:"apply changes"})
             .addContentTableAction("applyChangesRowData",{
                 startAction:function(contentTableRowsData, actionParams, startContentTableAction){
-                    actionParams["finishedCounterBySuccess"]=0;actionParams["finishedCounterByFailed"]=0;
-                    if(actionParams.toolPanes&&actionParams.toolPanes[0]) actionParams.toolPanes[0].set("content","");
+                    if(!contentTableRowsData||!contentTableRowsData.length>0)return;
+                    actionParams["finishedCounterByPassed"]=0;actionParams["finishedCounterByFailed"]=0;
+                    actionParams["finishedCounterBySuccess"]=0;actionParams["finishedCounterByApplied"]=0;
                     actionParams.progressDialog.setContentHeight(300);
+                    actionParams.progressDialog.addMsgLine("START APPLY "+contentTableRowsData.length+" DATABASE CURRENT CHANGES ...",{textStyle:"font-weight:bold"});
+                    if(actionParams.toolPanes&&actionParams.toolPanes[0]) actionParams.toolPanes[0].set("content","");
                     startContentTableAction();
                 },
                 tableRowAction:function(contentTableRowData, actionParams, contentTableUpdatedRowData, startNextAction, finishedAction){
-                    var rowData=contentTableRowData,
-                            changeID = contentTableRowData.changeID;                    console.log("ContentTableRowsAction rewritePPByRowData contentTableRowData=",contentTableRowData);
-                    var type = contentTableRowData.type;
-                    actionParams.progressDialog.addMsg(actionParams.progressCounter+" ПРОЦЕСС:"+rowData.changeID+"("+rowData.changeObj+") ...");
-//                    if (type !== "new"){
-//                        startNextAction(); return;
-//                    }
-                    //if type == "new"
+                    var rowData=contentTableRowData, changeID = contentTableRowData.changeID, type = contentTableRowData.type;
+                    actionParams.progressDialog.addMsgLine(actionParams.progressCounter+" "+"Process: ");
+                    actionParams.progressDialog.addMsg(rowData.changeID+" ("+rowData.changeObj+")",{textStyle:"text-decoration:underline"});
+                    if(type=="applied"){
+                        actionParams["finishedCounterByPassed"]++;
+                        actionParams.progressDialog.addMsg(" passed.");
+                        startNextAction();
+                        return;
+                    }
+                    //if type !== "applied"
                     $$.request.postJSONData({url:"/sysadmin/database/applyChange",conditions:null,showErrorDialog:false,consoleLog:true,
-                                data:{"CHANGE_ID":changeID, appliedDatetime:moment().format("YYYY.MM.DD HH:mm:ss")}, resultItemName:"resultItem" },
-                            function(resultItem,error){                                            //console.log("applyChange result,error",resultItem,error);
-
-                                if(error){
+                                data:{"CHANGE_ID":changeID, appliedDatetime:moment().format("YYYY.MM.DD HH:mm:ss")}, resultItemName:"resultItem"},
+                            function(resultItem,error){                                            //console.log("sysadmin/database/applyChange resultItem=",resultItem,"error=",error);
+                                if(error||!resultItem){
                                     actionParams["finishedCounterByFailed"]++;
-                                    actionParams.progressDialog.setMsg(actionParams.progressCounter+" ПРОЦЕСС:"+rowData.changeID+"("+rowData.changeObj+") НЕ УДАЧНО! "+"NOT APPLIED! Reason: " + error.message);
-                                    startNextAction(); return;
-                                }
-
-
-                                var typeValue = type, changeMsg = null;
-                                if(resultItem&&!error){
-                                    if(resultItem.ID == changeID) typeValue = "applied";
-                                    if(resultItem.CHANGE_MSG)
-                                        changeMsg = (changeMsg == null) ? resultItem.CHANGE_MSG : changeMsg + " <br>Change message: " + resultItem.CHANGE_MSG;
-                                    else {
-                                        var changeMsgUnknown= "Result unknown!";
-                                        changeMsg = (changeMsg == null) ? changeMsgUnknown:changeMsg+" <br>Change message:"+changeMsgUnknown;
-                                    }
-                                    actionParams["finishedCounterByNoConnection"]=0;
-                                    contentTableUpdatedRowData["message"]= changeMsg; contentTableUpdatedRowData["type"]= typeValue;
-                                    startNextAction();
-                                    return
-                                }
-
-                                if(error&&error.reqError){
-                                    if(!actionParams["finishedCounterByNoConnection"]) actionParams["finishedCounterByNoConnection"]=0;
-                                    actionParams["finishedCounterByNoConnection"]++;
-                                    if(actionParams["finishedCounterByNoConnection"]>10) { finishedAction(); return; }
-                                    startNextAction(false);
+                                    var errMsg=(error)?error.message:"No operation result!";
+                                    actionParams.progressDialog.addMsg(' FAILED! Reason: '+errMsg,{textStyle:"color:red"});
+                                    contentTableUpdatedRowData["type"]= "failed";contentTableUpdatedRowData["message"]= errMsg;
+                                    finishedAction();//startNextAction();
                                     return;
                                 }
-                                if(error){
-                                    changeMsg = "NOT APPLIED! Reason: " + error;
-                                    actionParams["failedMsg"]=error;
-                                    if(!actionParams["finishedCounterByFailed"]) actionParams["finishedCounterByFailed"]=0;
-                                    actionParams["finishedCounterByFailed"]++;
+                                actionParams["finishedCounterBySuccess"]++;
+                                var typeValue = "success", resultMsg;
+                                actionParams.progressDialog.addMsg(' SUCCESS');
+                                if(resultItem.ID == changeID){
+                                    typeValue = "applied"; actionParams["finishedCounterByApplied"]++;
+                                    actionParams.progressDialog.addMsg(' APPLIED!');
                                 }
-
-                                actionParams["finishedCounterByNoConnection"]=0;
-
-
-                                if(actionParams["finishedCounterByFailed"]>0) {
-                                    finishedAction();
-                                    return;
-                                }
-
+                                contentTableUpdatedRowData["type"]= typeValue;
+                                resultMsg=resultItem.CHANGE_MSG||"Apply result unknown!";
+                                contentTableUpdatedRowData["message"]= resultMsg;
+                                startNextAction();
                             });
                 },
                 endAction:function(rowsData, actionParams){
-                    if(actionParams.progressStopped)actionParams.progressDialog.addMsg("ПРОЦЕСС ОСТАНОВЛЕН.");
-                    else actionParams.progressDialog.addMsg("ПРОЦЕСС ЗАВЕРШЕН.");
-                    if(actionParams.toolPanes&&actionParams.toolPanes[0]) actionParams.toolPanes[0].set("content","FAILED:"+actionParams["finishedCounterByFailed"]);
+                    if(actionParams.progressStopped)actionParams.progressDialog.addMsgLine("APPLY DATABASE CURRENT CHANGES STOPPED!",{textStyle:"font-weight:bold;color:red"});
+                    else actionParams.progressDialog.addMsgLine("APPLY DATABASE CURRENT CHANGES FINISHED.",{textStyle:"font-weight:bold"});
+                    var resultContent="PASSED:"+actionParams["finishedCounterByPassed"]
+                            +"<br>FAILED:"+actionParams["finishedCounterByFailed"]
+                            +"<br>SUCCESS:"+actionParams["finishedCounterBySuccess"]
+                            +"<br>APPLIED:"+actionParams["finishedCounterByApplied"];
+                    actionParams.progressDialog.addMsgLine(resultContent,{textStyle:"font-weight:bold"});
+                    if(actionParams.toolPanes&&actionParams.toolPanes[0])actionParams.toolPanes[0].set("content",resultContent);
                     $$.$parent.getParent().updateSysState({revalidate:true});
                 }
             })
             .addToolPaneActionButton("Apply selected change",{btnStyle:"width:160px",contentTableActionName:"applyChangesRowData"})
             .addToolPaneActionButton("Apply all changes",{btnStyle:"width:160px",contentTableActionName:"applyChangesRowData",
-                    beforeContentTableAction: function(contentHTableSelectedRowData, contentHTableRowsData, actionParams, startContentHTableAction){
-                        startContentHTableAction(contentHTableRowsData);
-                    }
+                beforeContentTableAction: function(contentHTableSelectedRowData, contentHTableRowsData, actionParams, startContentHTableAction){
+                    startContentHTableAction(contentHTableRowsData);
+                }
             })
-            .addContentTablePopupMenuAction("Apply selected changes...", {contentTableActionName:"applyChangesRowData"})
-            .addContentTablePopupMenuAction("Apply all changes...", {contentTableActionName:"applyChangesRowData",
+            .addContentTablePopupMenuAction("Apply selected changes...",{contentTableActionName:"applyChangesRowData"})
+            .addContentTablePopupMenuAction("Apply all changes...",{contentTableActionName:"applyChangesRowData",
                 beforeContentTableAction:function(selectedTableContent, actionParams, startContentTableAction){       //console.log("beforeContentTableAction",actionParams);
                     startContentTableAction(actionParams.thisDoc.getHTableContent());
                 }
             });
     $$.sadb_TDocDBChangeLog
-            .init({titleText:"database change log", dataURL:"/sysadmin/database/getChangeLog",dataURLCondition:{"1~":1}, buttonPrint: false})
-            .addTotalCountNumberBox("ИТОГО строк:", 140, {style: "font-weight:bold;",inputStyle: "width:40px;"});
+            .init({titleText:"database change log", dataURL:"/sysadmin/database/getChangeLog", dataURLCondition:{"1~":1}, buttonPrint:false})
+            .addTotalCountNumberBox("ИТОГО строк:", 140, {style:"font-weight:bold;",inputStyle:"width:40px;"});
 
     $$.sadb_TDocDBCurrentChanges.onShow= function(){
         if(!$$.sadb_TDocDBCurrentChanges.startedUp)$$.sadb_TDocDBCurrentChanges.startupDoc();

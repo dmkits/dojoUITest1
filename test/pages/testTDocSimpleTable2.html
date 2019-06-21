@@ -65,7 +65,7 @@
                                 changeID = contentTableRowData.changeID;                    console.log("ContentTableRowsAction rewritePPByRowData contentTableRowData=",contentTableRowData);
                         var type = contentTableRowData.type;
 
-                        actionParams.progressDialog.addMsg(actionParams.progressCounter+" ПРОЦЕСС:"+rowData.ProdName+"("+rowData.ProdID+")");
+                        actionParams.progressDialog.addMsgLine(actionParams.progressCounter+" ПРОЦЕСС:"+rowData.ProdName+"("+rowData.ProdID+")");
 
                         if (type !== "new"){ startNextAction(); return; }
                         //if type == "new"
@@ -110,8 +110,8 @@
                                 });
                     },
                     endAction:function(rowsData, actionParams){
-                        if(actionParams.progressStopped)actionParams.progressDialog.addMsg("ПРОЦЕСС ОСТАНОВЛЕН.");
-                        else actionParams.progressDialog.addMsg("ПРОЦЕСС ЗАВЕРШЕН.");
+                        if(actionParams.progressStopped)actionParams.progressDialog.addMsgLine("ПРОЦЕСС ОСТАНОВЛЕН.");
+                        else actionParams.progressDialog.addMsgLine("ПРОЦЕСС ЗАВЕРШЕН.");
 //                    if (sysadmin_database_PageContainer.getParent().updateDBState)
 //                        sysadmin_database_PageContainer.getParent().updateDBState({revalidate:true});
                         if ($$.$parent.updateDBState) $$.$parent.updateDBState({revalidate:true});
