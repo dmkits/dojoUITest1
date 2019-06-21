@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" lang="ru" Accept-Language="ru"/>
+    <!--[if IE]>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+    <![endif]-->
+    <!--<link rel="icon" type="image/gif" id="favicon_id"/>-->
+    <!--<link rel="icon" type="image/gif" href="/icons/moda32x32.ico"/>-->
+    <!--[if IE]>
+    <!---link rel="stylesheet" type="text/css" href="/css/main_ie.css"--!>
+    <!--<link rel="shortcut icon" href="icons/moda32x32.ico" />-->
+    <!--<![endif]&ndash;&gt;-->
+    <!--[if !IE]><!-->
+    <!--link rel="stylesheet" type="text/css" href="/css/main_nie.css"--!>
+    <!--<![endif]-->
+    <script src="/jslib/handsontable-0.29.1/handsontable.full.min.js"></script>
+    <link rel="stylesheet" media="screen" href="/jslib/handsontable-0.29.1/handsontable.full.min.css">
+    <script src="/jslib/handsontable-0.29.1/numbro/languages/ru-RU.min.js"></script>
+    <script src="/jslib/handsontable-0.29.1/moment/moment.js"></script>
+    <script src="/jslib/handsontable-0.29.1/moment/locale/ru.js"></script>
+    <link rel="stylesheet" href="/jslib/dijit/themes/claro/claro.css" media="screen">
+    <!--<link rel="stylesheet" href="/jslib/dijit/themes/soria/soria.css" media="screen">-->
+    <!--<link rel="stylesheet" href="/jslib/dijit/themes/nihilo/nihilo.css" media="screen">-->
+    <!--<link rel="stylesheet" href="/jslib/dijit/themes/tundra/tundra.css" media="screen">-->
+    <script type="text/javascript" src="/jslib/dojo/dojo.js" data-dojo-config="async:true,parseOnLoad:false"></script>
+    <link rel="stylesheet" href="/css/htable.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" media="screen">
+    <!--<link rel="stylesheet" type="text/css" href="/css/contentController.css" media="screen">-->
+    <!--<script type="text/javascript" src="/jslib/jsBarcode/JsBarcode.ean-upc.min.js"></script>-->
+    <script type="text/javascript" src="/jslib/$$.js"></script></head>
+<body class="claro">
+<page id="main_Page" design="headline">
+    <BorderContainer id="main_PageTop" region="top" design="sidebar" class="mainTopContent" gutters="true">
+        <ContentPane id="main_TopImg" region="left" class="mainTopContent"></ContentPane>
+        <MenuBar id="main_MainMenu" region="top" class="mainTopContent"></MenuBar>
+        <ContentPane id="main_TopInfoPane" region="bottom" class="mainTopContent">
+            <div id="main_configName"  style="display:inline;margin-left:10px;"></div>
+            <div id="main_dbUsername" style="display:inline;margin-left:10px;"></div>
+            <div id="main_dbEmpName" style="display:inline;margin-left:10px;"></div>
+        </ContentPane>
+    </BorderContainer>
+    <TabContainer id="main_Tabs" region="center" tabPosition="top" class="mainContent"></TabContainer>
+</page>
+<script type="text/javascript">
+    $$.startupPage("#main_Page",function(){                                                                 console.log("START MAIN PAGE...",$$);//!!!IT'S FOR TESTING!!!
+        var mainTabs=$$.main_Tabs;                                                                          console.log("mainTabs=",mainTabs);
+        // var mainMenu=[
+        //     { "menuItemName":"menuBarItemRec", "menuTitle":"Приход товара", "pageTitle":"Приход товара", "module":"rec", "closable":false },
+        //     { "menuItemName":"menuBarItemReportsProds", "menuTitle":"Товарные отчеты", "pageTitle":"Товарные отчеты", "closable":false,
+        //         popupMenu:[
+        //             {menuTitle:"Остатки товаров"},
+        //             {menuItemName:"separator1"},
+        //             {menuTitle:"Движение товаров"}
+        //         ]
+        //     },
+        //     { "menuItemName":"menuBarItemReportsCashier", "menuTitle":"Отчеты кассира", "pageTitle":"Отчеты кассира", "module":"reportsCashier", "closable":false },
+        //     { "menuItemName":"menuBarItemHelpAbout", "menuTitle":"О программе", "action":"help_about" },
+        //     { "menuItemName":"menuBarItemClose", "menuTitle":"Выход", "action":"close" }
+        // ];
+        $$.createMainMenu = function(mainMenuData){
+            var mainMenu=$$.main_MainMenu;
+            var menuClickAddInnerPage=function(menuItem,e){                                                 console.log(menuItem.id+" "+menuItem.label+" click",menuItem,e);
+                var iPageName="innerPage_"+menuItem.id, iPageInstance=mainTabs.$.cid(iPageName);            console.log(menuItem.id+" "+menuItem.label+" click iPageInstance=",iPageInstance);
+                if(!iPageInstance){
+                    mainTabs.$.addInnerPage({id:iPageName, title:menuItem.pageTitle, region:"center",style:"margin:0;padding:0;",
+                                closable:menuItem.closable, href:menuItem.pageHref
+                            },
+                            function(innerPage){
+                                iPageInstance=mainTabs[iPageName]=innerPage;
+                            });
+                }
+                var ch=mainTabs.selectChild(iPageName);
+            };
+            for(var i in mainMenuData) {
+                var mainMenuDataItem=mainMenuData[i];
+                if (!mainMenuDataItem.popupMenu||mainMenuDataItem.popupMenu.length==0){                     //console.log("mainMenuDataItem",mainMenuDataItem);
+                    mainMenu.$.addMenu("MenuBarItem", {id:mainMenuDataItem.menuItemName,label:mainMenuDataItem.menuTitle, itemData:mainMenuDataItem,
+                        pageTitle:mainMenuDataItem.pageTitle,closable:mainMenuDataItem.closable,pageHref:mainMenuDataItem.pageHref,
+                        click:menuClickAddInnerPage
+                    });
+                    continue;
+                }
+                // make sub-menu
+                mainMenu.$.addMenu("PopupMenuBarItem", {id:mainMenuDataItem.menuItemName, label: mainMenuDataItem.menuTitle},
+                        function(menuBar){                                                                 //console.log("menuBar=",menuBar);
+                            for(var pi in mainMenuDataItem.popupMenu) {
+                                var popupMenuItem=mainMenuDataItem.popupMenu[pi];
+                                var popupMenuItemName = popupMenuItem.menuItemName;
+                                if (popupMenuItemName&&popupMenuItemName.indexOf("separator")==0) {
+                                    menuBar.$.addMenu("MenuSeparator", {id:popupMenuItem.menuItemName});
+                                    continue;
+                                }
+                                menuBar.$.addMenu("MenuItem", {id:popupMenuItem.menuItemName,label:popupMenuItem.menuTitle, itemData:popupMenuItem,
+                                    pageTitle:popupMenuItem.pageTitle,closable:popupMenuItem.closable,pageHref:popupMenuItem.pageHref,
+                                    click:menuClickAddInnerPage
+                                });
+                            }
+                        });
+            }
+        };
+        // setTimeout(function () {
+        //     createMainMenu(mainMenu);
+        // },1000);
+                                                                                                            //console.log("$$.request",$$.request);
+        $$.request.getJSONData({url:"/getMainData"},function(result){                                       console.log("getJSONData /getMainData",result);
+            if(!result)return;
+            if(result.mainMenu){
+                result.mainMenu.push({
+                    "menuItemName":"menuBarItemTDocSimpleTable1", "menuTitle":"tDocSimpleTable1", "pageTitle":"tDocSimpleTable1", pageHref:"/test/tDocSimpleTable1", "closable":true
+                });
+                result.mainMenu.push({
+                    "menuItemName":"menuBarItemTDocSimpleTable2wActions", "menuTitle":"tDocSimpleTable2wActions", "pageTitle":"tDocSimpleTable2wActions", pageHref:"/test/tDocSimpleTable2wActions", "closable":true
+                });
+            }
+            $$.createMainMenu(result.mainMenu);
+
+//        mainTabs.$.addInnerPage({region:"center", title:"Template Doc Simple Table 1", closable:true, style:"margin:0;padding:0;",href:"/test/tDocSimpleTable1"});
+            if($$.menuBarItemTDocSimpleTable1)$$.menuBarItemTDocSimpleTable1.click($$.menuBarItemTDocSimpleTable1);
+            if($$.menuBarItemTDocSimpleTable2wActions)$$.menuBarItemTDocSimpleTable2wActions.click($$.menuBarItemTDocSimpleTable2wActions);
+        });
+
+//        $$("#main_Page").$.addInnerPage({region:"center", title:"innerPage_1", closable:true, style:"margin:0;padding:0;",href:"/ipage1"});
+        mainTabs.$.addInnerPage({region:"center", title:"innerPage_1", closable:false, style:"margin:0;padding:0;",href:"/ipage1"});
+
+//        mainTabs.$.addInnerPage({region:"center", id:"reportsCashier", title:"Отчеты кассира", closable:true, style:"margin:0;padding:0;",href:"/reports/cashier"},
+//                function(innerPage){
+//                    mainTabs.selectChild(mainTabs["reportsCashier"]=innerPage);
+//                });
+                                                                                                            console.log("MAIN PAGE STARTED! $$=",$$);//!!!IT'S FOR TESTING!!!
+    });
+</script>
+</body>
+</html>
