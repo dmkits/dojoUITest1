@@ -61,7 +61,7 @@ $app.startup= function(pageTagID,pageScript){
         $app._loadScript($app.$parentNode,"/dojo/dojo.js",{"data-dojo-config":"async:true,parseOnLoad:false"},
             function(){
                 window.$$={};
-                var appHTableModules=(window.Handsontable)?["app/hTableSimple","app/hTableSimpleFiltered","app/tDocSimpleTable"]:[];
+                var appHTableModules=(window.Handsontable)?["app/hTableSimple","app/hTableSimpleFiltered","app/tDocSimpleTable","app/tDocSimpleTableEdt"]:[];
                 require(["dijit/registry","dojo/ready","app/dialogs","app/request","app/Page","app/InnerPage"].concat(appHTableModules),
                     function (registry,ready,dialogs,request){
                         window.$$.dialogs= dialogs;

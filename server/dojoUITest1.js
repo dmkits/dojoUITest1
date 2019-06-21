@@ -30,41 +30,6 @@ module.exports= function(app) {
         res.sendFile(appViewsPath + '/ipage2.html');
     });
 
-    app.get("/sysadmin", function (req, res) {
-        res.sendFile(appViewsPath + '/sysadmin.html');
-    });
-    app.get("/sysadmin/sysConfig", function (req, res) {
-        res.sendFile(appViewsPath + '/sysadmin/sysConfig.html');
-    });
-    app.get("/sysadmin/Database", function (req, res) {
-        res.sendFile(appViewsPath + '/sysadmin/database.html');
-    });
-    app.get("/sysadmin/Database/get1", function (req, res) {
-        res.send();
-    });
-    var tDBCurrentChangesData={
-        columns:[
-            {data: "changeID", name: "changeID", width: 200, type: "text"},
-            {data: "changeDatetime", name: "changeDatetime", width: 120, type:"text", datetimeFormat:"YYYY-MM-DD HH:mm:ss"},
-            {data: "changeObj", name: "changeObj", width: 200, type: "text"},
-            {data: "changeVal", name: "changeVal", width: 450, type: "text"},
-            {data: "type", name: "type", width: 100, type: "text"},
-            {data: "message", name: "message", width: 200, type: "text"}
-        ],
-        identifier:"changeID",
-        items:[
-            {changeID:"1",changeObj:"o1",changeVal:"QWErtyUIOP",type:"applied",message:""},
-            {changeID:"1-2",changeObj:"oo12",changeVal:"ASDfghJKL",type:"new",message:""},
-            {changeID:"1-2-3",changeObj:"ooo123",changeVal:"1234567890",type:"new",message:""}
-        ]
-    };
-    app.get("/sysadmin/Database/getCurrentChanges", function (req, res) {
-        res.send(tDBCurrentChangesData);
-    });
-    app.get("/sysadmin/DatabaseNEW", function (req, res) {
-        res.sendFile(appViewsPath + '/sysadmin/databaseNEW.html');
-    });
-
     app.get("/reports/cashier", function (req, res) {
         res.sendFile(appViewsPath + '/reports/cashier.html');
     });

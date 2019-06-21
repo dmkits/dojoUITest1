@@ -344,7 +344,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                     return;
                 }
                 var oldSelRow= this.getSelectedRow();                                                       //log("HTableSimple setSelection",selection);
-                this.handsonTable.getSettings().setDataSelectedProp(firstSelectedRowData, oldSelRow);
+                this.handsonTable.getSettings().setDataSelectedProp(firstSelectedRowData,oldSelRow);
                 this.htSelection= selection;
                 this.handsonTable.render();
             },
@@ -521,12 +521,12 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                 if(!actionParams.progressDialogStoppedMessage)actionParams.progressDialogStoppedMessage="Операция остановлена!";
                 if(!actionParams.progressDialog)actionParams.progressDialog=this.updateRowsActionDialog(actionParams,rowsData.length);
                 actionParams.progressStopped=false;actionParams.progressFinished=false;
-                this.updateRowsActionCallback(this, rowsData, 0, actionParams, actionFunction,
+                this._updateRowsActionCallback(this, rowsData, 0, actionParams, actionFunction,
                     /*finishedAction*/function(rowsData, actionParams){
-                        if(actionFunction)finishedAction(rowsData, actionParams);
+                        if(finishedAction)finishedAction(rowsData, actionParams);
                     });
             },
-            updateRowsActionCallback: function(tableInstance, rowsData, ind, actionParams, actionFunction, finishedAction){
+            _updateRowsActionCallback: function(htableInstance, rowsData, ind, actionParams, actionFunction, finishedAction){
                 var rowData=rowsData[ind];
                 if(!rowData||actionParams.progressDialog.progressStopped){
                     if(actionParams.progressDialog.progressStopped) actionParams.progressStopped=true;
@@ -534,7 +534,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                         actionParams.progressFinished=true; actionParams.progressDialog.setFinished();
                     }
                     if(finishedAction) setTimeout(function(){ finishedAction(rowsData, actionParams); },10);
-                    else tableInstance.updateRowData(rowData, {}, {callUpdateContent:true});
+                    else htableInstance.updateRowData(rowData, {}, {callUpdateContent:true});
                     return;
                 }
                 actionParams.progressCounter=ind+1; actionParams.progressDialog.setProgress(actionParams.progressCounter);
@@ -542,14 +542,14 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane","dojox/widget/Standby",
                 actionFunction(rowData, actionParams, updatedRowData,
                     /*nextAction*/function(next){
                         var indNext=(next===false)?ind:ind+1;
-                        tableInstance.updateRowData(rowData, updatedRowData, {selectUpdateRow:true,callUpdateContent:false});
+                        htableInstance.updateRowData(rowData, updatedRowData, {selectUpdateRow:true,callUpdateContent:false});
                         setTimeout(function(){
-                            tableInstance.updateRowsActionCallback(tableInstance, rowsData, indNext, actionParams, actionFunction, finishedAction);
+                            htableInstance._updateRowsActionCallback(htableInstance, rowsData, indNext, actionParams, actionFunction, finishedAction);
                         },10);
                     },/*finishedAction*/function(){
-                        tableInstance.updateRowData(rowData, updatedRowData, {selectUpdateRow:true,callUpdateContent:false});
+                        htableInstance.updateRowData(rowData, updatedRowData, {selectUpdateRow:true,callUpdateContent:false});
                         setTimeout(function(){
-                            tableInstance.updateRowsActionCallback(tableInstance, rowsData, rowsData.length, actionParams, actionFunction, finishedAction);
+                            htableInstance._updateRowsActionCallback(htableInstance, rowsData, rowsData.length, actionParams, actionFunction, finishedAction);
                         },10);
                     })
             }

@@ -17,16 +17,13 @@
                     <td colspan="2"><textBox id="sa_sysConfig_dbName" label="dbName:" labelstyle="width:100px;text-align:right" style="width:200px;margin-left:5px;"></textBox></td>
                 </tr>
                 <tr height="25px">
-                    <td><textBox id="sa_sysConfig_dbUser" label="dbUser:" labelstyle="width:100px;text-align:right" style="width:100px;margin-left:5px;"></textBox></td>
+                    <td><textBox id="sa_sysConfig_dbUser" label="dbUser:" labelstyle="width:100px;text-align:right" style="width:150px;margin-left:5px;"></textBox></td>
                 </tr>
                 <tr height="25px">
                     <td><textBox id="sa_sysConfig_dbUserPass" label="dbUserPass:" labelstyle="width:100px;text-align:right" style="width:150px;margin-left:5px;"></textBox></td>
                 </tr>
                 <tr height="25px">
-                    <td><textBox id="sa_sysConfig_cashserverUrl" label="cashserver URL:" labelstyle="width:100px;text-align:right" style="width:350px;margin-left:5px;"></textBox></td>
-                </tr>
-                <tr height="25px">
-                    <td><textBox id="sa_sysConfig_cashserverPort" label="cashserver port:" labelstyle="width:100px;text-align:right" style="width:50px;margin-left:5px;"></textBox></td>
+                    <td><textBox id="sa_sysConfig_appConfigName" label="app configName:" labelstyle="width:100px;text-align:right" style="width:100px;margin-left:5px;"></textBox></td>
                 </tr>
                 <tr height="40px">
                     <td>
@@ -38,40 +35,41 @@
             </table>
         </td>
         <td>
-            <table width="200px" height="100%" style="position: static;top:0;">
+            <table width="300px" height="100%" style="position: static;top:0;">
                 <tr height="30px">
                     <th><b>Database list</b></th>
                 </tr>
                 <tr height="25px;">
-                    <td><div id="dbList" style="overflow-y:scroll"></div></td>
+                    <td><div id="sa_sysConfig_dbList" style="overflow-y:scroll"></div></td>
                 </tr>
                 <tr></tr>
             </table>
         </td>
     </tr>
 </table>
-<script type="text/javascript">                                                                             log("sysConfig",$$);
-    getAppConfiguration = function(){                                                                       log("sysConfig.getSysConfig");
-        var sysConfigData={
-            dbHost:"127.0.0.1:8080",
-            dbName:"GMSSample38",
-            dbUser:"sa",
-            dbUserPass:"************",
-            cashserverUrl:"127.0.0.1",
-            cashserverPort:"3000"
-        };
-        setSysConfigContent(sysConfigData);
-        $$.dbList.innerHTML="GMSData38<br>GMSSample38<br>GMSDev38_1<br>GMSText38_1";
-        return;
-        $$.request.getJSONData({url: "/sysadmin/sysConfig/getSysConfig", consoleLog: true},
-            function(result,error) {                                                                        log("sysConfig.getSysConfig getJSONData result",result,error);
-                if(error){
-                    $$.sa_sysConfig_configState.innerHTML = "<div><b style='color:red'>"+error.message+"</b></div>";
-                    return;
-                }
-                $$.sa_sysConfig_configState.innerHTML = "<div><b>Configuration loaded.</b></div>";
-                setSysConfigContent(result);
-            });
+<script type="text/javascript">                                                                             //log("sysadmin sysConfig",$$);//!!!IT'S FOR TESTING!!!
+    var getSysConfig = function(){
+        $$.request.getJSONData({url:"/sysadmin/sysConfig/getSysConfig",consoleLog: true},function(result,error){
+            if(error){
+                $$.sa_sysConfig_configState.innerHTML = "<div><b style='color:red'>"+error.message+"</b></div>";
+                return;
+            }
+            $$.sa_sysConfig_configState.innerHTML = "<div><b>Configuration loaded.</b></div>";
+            setSysConfigContent(result);
+        })
+    };
+    var getDBList= function (){
+        $$.request.getJSONData({url:"/sysadmin/sysConfig/getDBList",consoleLog: true},function(result,error){
+            if(error||!result){
+                var errMsg=(error)?error.message:"No server result!";
+                $$.sa_sysConfig_dbList.innerHTML= "<div><b style='color:red'>Failed to get database list!</b> Reason:"+errMsg+"</div>";
+                return;
+            }
+            var dbList=result.dbList, dbListStr="";
+            if(!dbList)dbListStr="NO database list from server!";
+            else for(var i in dbList) dbListStr+=dbList[i].name+"<br>";
+            $$.sa_sysConfig_dbList.innerHTML= dbListStr;
+        })
     };
     function setSysConfigContent(sysConfigData) {
         $$.sa_sysConfig_dbHost.set("value",sysConfigData["dbHost"]);
@@ -80,23 +78,20 @@
         $$.sa_sysConfig_dbName.set("value",sysConfigData["dbName"] );
         $$.sa_sysConfig_dbUser.set("value",sysConfigData["dbUser"]);
         $$.sa_sysConfig_dbUserPass.set("value",sysConfigData["dbUserPass"]);
-        $$.sa_sysConfig_cashserverUrl.set("value",sysConfigData["cashserverUrl"]);
-        $$.sa_sysConfig_cashserverPort.set("value",sysConfigData["cashserverPort"]);
+        $$.sa_sysConfig_appConfigName.set("value",sysConfigData["configName"]);
     }
-    getAppConfiguration();
+    getSysConfig(); getDBList();
     $$.sa_sysConfig_btnLoadConfig.onClick=function(){
         $$.sa_sysConfig_configState.innerHTML = "<div><b>Loading configuration parameters...</b></div>";
-        $$.request.getJSONData({url: "/sysadmin/sysConfig/loadSysConfig", consoleLog: true},
-                function(result,error){
-                    if(error){
-                        $$.sa_sysConfig_configState.innerHTML = "<div><b style='color:red'>Failed load system config! Reason: "+error.message+"</b></div>";
-                        return;
-                    }
-                    $$.sa_sysConfig_configState.innerHTML = "<div><b>Configuration reloaded.</b></div>";
-                    setSysConfigContent(result);
-                    if($$.$parent.getParent().updateSysState)  $$.$parent.getParent().updateSysState();
-                }
-        );
+        $$.request.getJSONData({url: "/sysadmin/sysConfig/loadSysConfig", consoleLog: true},function(result,error){
+            if(error){
+                $$.sa_sysConfig_configState.innerHTML = "<div><b style='color:red'>"+error.message+"</b></div>";
+                return;
+            }
+            $$.sa_sysConfig_configState.innerHTML = "<div><b>Configuration reloaded.</b></div>";
+            setSysConfigContent(result);
+            if($$.$parent.getParent().updateSysState)  $$.$parent.getParent().updateSysState();
+        });
     };
     $$.sa_sysConfig_btnSaveConfigAndReconnect.onClick=function(){
         $$.sa_sysConfig_configState.innerHTML = "<div><b>Configuration saving and reconnected to database...</b></div>";
@@ -106,21 +101,19 @@
             "dbName": $$.sa_sysConfig_dbName.get('value'),
             "dbUser": $$.sa_sysConfig_dbUser.get('value'),
             "dbUserPass": $$.sa_sysConfig_dbUserPass.get('value'),
-            "cashserverUrl":$$.sa_sysConfig_cashserverUrl.get('value'),
-            "cashserverPort":$$.sa_sysConfig_cashserverPort.get('value')
+            "configName":$$.sa_sysConfig_appConfigName.get('value')
         };
-        $$.request.postJSONData({url:"/sysadmin/sysConfig/storeSysConfigAndReconnectToDB", data:newDBConfig, consoleLog:true},
+        $$.request.postJSONData({url:"/sysadmin/sysConfig/storeSysConfigAndReconnectToDB",data:newDBConfig,consoleLog:true},
                 function(result,error){
                     if(error){
-                        $$.sa_sysConfig_configState.innerHTML = "<span><b style='color:red'>Failed store system config! Reason: "+error.message+"</b></span>";
+                        $$.sa_sysConfig_configState.innerHTML = "<span><b style='color:red'>"+error.message+"</b></span>";
+                        $$.$parent.getParent().updateSysState();
                         return;
                     }
-                    $$.sa_sysConfig_configState.innerHTML = "<span><b>Configuration saved.</b></span>";
-                    var dbConnectMsg=(result.errorDBConnectMsg)
-                            ?"<br><span><b style='color:red'>Failed connect to database! Reason: "+result.errorDBConnectMsg+"</b></span>"
-                            :"<br><span><b>Reconnected to database.</b></span>";
+                    $$.sa_sysConfig_configState.innerHTML = "<span><b>"+result.message+"</b></span>";
+                    var dbConnectMsg=(result.dbSysConnErr)?"<br><span><b style='color:red'>"+result.dbSysConnErr+"</b></span>":"";
                     $$.sa_sysConfig_configState.innerHTML+= dbConnectMsg;
-                    if($$.$parent.getParent().updateSysState) $$.$parent.getParent().updateSysState();
+                    $$.$parent.getParent().updateSysState();
                 });
     };
 </script>

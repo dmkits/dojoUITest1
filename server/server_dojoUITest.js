@@ -74,7 +74,7 @@ module.exports.loadSysConfig= loadSysConfig;                                    
 module.exports.getSysConfig= function(){ return sysConfig };
 module.exports.setSysConfig= function(newSysConfig){ sysConfig=newSysConfig; };
 
-var database = require('./databaseMSSQL');                                                          log.info('dataBase loaded on ', new Date().getTime()-startTime);//test
+//var database = require('./databaseMSSQL');                                                          log.info('dataBase loaded on ', new Date().getTime()-startTime);//test
 
 var configFileName=(sysConfig&&sysConfig.configName)?sysConfig.configName:'config.json',
     appConfig=JSON.parse(common.getJSONWithoutComments(fs.readFileSync('./'+configFileName,'utf-8')));
@@ -96,11 +96,10 @@ global.appViewsPath= path.join(__dirname,'/../pages/','');
 global.appModulesPath= path.join(__dirname,'/modules/','');
 global.appDataModelPath= path.join(__dirname,'/datamodel/','');
 
-var appModules=require("./modules");
 var loadInitModulesErrorMsg=null;
 module.exports.getLoadInitModulesError= function(){ return loadInitModulesErrorMsg; };
 
-require('./access')(server);
+//require('./access')(server);
 
 var startServer= function(){
     server.listen(appStartupParams.port, function (err) {
@@ -113,24 +112,9 @@ var startServer= function(){
     });                                                                                             log.info("server inited.");
 };
 
-database.setDBSystemConnection(sysConfig, function(err,result){
-    if(err) log.error("FAILED to set system connection! Reason: ",err);
-    appModules.validateModules(function(errs, errMessage){
-        if (errMessage){                                                                            log.error("FAILED validate! Reason: ",errMessage);
-        }
-        appModules.init(server,errs);
-        if(errs&&!errMessage){
-            var eCount=0;
-            for(var errItem in errs){
-                if (!loadInitModulesErrorMsg) loadInitModulesErrorMsg=""; else loadInitModulesErrorMsg+="<br>";
-                loadInitModulesErrorMsg+=errs[errItem];
-                eCount++;
-                if(eCount>3) break;
-            }
-        }
-        startServer();
-    });
-});
+require('./dojoUITest_sysadmin')(server);
+require('./dojoUITest1')(server);
+startServer();
 
 process.on("uncaughtException", function(err){
     log.error(err);
